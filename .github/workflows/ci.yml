@@ -63,16 +63,11 @@ jobs:
         node-version: 20.x
         registry-url: 'https://registry.npmjs.org'
     
-    - name: Install pnpm
-      uses: pnpm/action-setup@v2
-      with:
-        version: 8
-    
     - name: Install dependencies
-      run: pnpm install --frozen-lockfile
+      run: npm ci
     
     - name: Build package
-      run: pnpm run build:prod
+      run: npm run build:prod
     
     - name: Check if version changed
       id: version-check
@@ -91,11 +86,11 @@ jobs:
       if: steps.version-check.outputs.version-changed == 'true'
       run: |
         if [[ "${{ steps.version-check.outputs.package-version }}" == *"beta"* ]]; then
-          pnpm publish --tag beta --no-git-checks
+          npm publish --tag beta
         elif [[ "${{ steps.version-check.outputs.package-version }}" == *"alpha"* ]]; then
-          pnpm publish --tag alpha --no-git-checks
+          npm publish --tag alpha
         else
-          pnpm publish --no-git-checks
+          npm publish
         fi
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

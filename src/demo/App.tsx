@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
-import type { StyleItem } from '../index.ts';
-import { StyleSwitcherControl } from '../index.ts';
+import { StyleSwitcherControl, type StyleItem } from '../index.ts';
 import maplibregl from 'maplibre-gl';
 
 // Register RTL text plugin for proper Arabic script rendering

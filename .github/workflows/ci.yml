@@ -24,37 +24,29 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
     
-    - name: Install pnpm
-      uses: pnpm/action-setup@v2
-      with:
-        version: 8
-    
     - name: Install dependencies
-      run: pnpm install --frozen-lockfile
+      run: npm ci
     
     - name: Run type check
-      run: pnpm run type-check
+      run: npm run type-check
     
     - name: Run linter
-      run: pnpm run lint
+      run: npm run lint
     
     - name: Check formatting
-      run: pnpm run format:check
+      run: npm run format:check
     
     - name: Run tests
-      run: pnpm run test:ci
+      run: npm run test:ci
     
     - name: Build package
-      run: pnpm run build:prod
+      run: npm run build:prod
     
-    - name: Upload coverage to Codecov
+    - name: Upload coverage reports to Codecov
       if: matrix.node-version == '20.x'
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v5
       with:
-        file: ./coverage/lcov.info
-        flags: unittests
-        name: codecov-umbrella
-        fail_ci_if_error: false
+        token: ${{ secrets.CODECOV_TOKEN }}
 
   publish:
     needs: test

@@ -5,13 +5,12 @@
   background: #fff;
   border-radius: 8px;
   padding: 8px;
+  margin: 8px;
   transition: box-shadow 0.2s;
   min-width: unset;
   width: auto;
   user-select: none;
   cursor: pointer;
-  margin: 0;
-  direction: ltr; /* Default LTR */
 }
 
 /* RTL support */

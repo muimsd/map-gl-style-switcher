@@ -1,0 +1,109 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    
+    - name: Install pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: 8
+    
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
+    
+    - name: Run type check
+      run: pnpm run type-check
+    
+    - name: Run linter
+      run: pnpm run lint
+    
+    - name: Check formatting
+      run: pnpm run format:check
+    
+    - name: Run tests
+      run: pnpm run test:ci
+    
+    - name: Build package
+      run: pnpm run build:prod
+    
+    - name: Upload coverage to Codecov
+      if: matrix.node-version == '20.x'
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage/lcov.info
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+
+  publish:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Use Node.js 20.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20.x
+        registry-url: 'https://registry.npmjs.org'
+    
+    - name: Install pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: 8
+    
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
+    
+    - name: Build package
+      run: pnpm run build:prod
+    
+    - name: Check if version changed
+      id: version-check
+      run: |
+        PACKAGE_VERSION=$(node -p "require('./package.json').version")
+        NPM_VERSION=$(npm view map-gl-style-changer version 2>/dev/null || echo "0.0.0")
+        echo "package-version=$PACKAGE_VERSION" >> $GITHUB_OUTPUT
+        echo "npm-version=$NPM_VERSION" >> $GITHUB_OUTPUT
+        if [ "$PACKAGE_VERSION" != "$NPM_VERSION" ]; then
+          echo "version-changed=true" >> $GITHUB_OUTPUT
+        else
+          echo "version-changed=false" >> $GITHUB_OUTPUT
+        fi
+    
+    - name: Publish to npm
+      if: steps.version-check.outputs.version-changed == 'true'
+      run: |
+        if [[ "${{ steps.version-check.outputs.package-version }}" == *"beta"* ]]; then
+          pnpm publish --tag beta --no-git-checks
+        elif [[ "${{ steps.version-check.outputs.package-version }}" == *"alpha"* ]]; then
+          pnpm publish --tag alpha --no-git-checks
+        else
+          pnpm publish --no-git-checks
+        fi
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

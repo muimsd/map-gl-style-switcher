@@ -9,6 +9,12 @@
 
 A TypeScript control for switching Mapbox GL / MapLibre GL map styles. Easily add a floating style switcher to your map app, with support for multiple styles, images, dark/light themes, and before/after change callbacks.
 
+## Demo
+
+![Demo GIF](./images/demo.gif)
+
+*Live demo of the style switcher control in action*
+
 ## Features
 
 - IControl implementation for Mapbox GL / MapLibre GL
@@ -87,6 +93,9 @@ const styleSwitcher = new StyleSwitcherControl({
 
 map.addControl(styleSwitcher, 'bottom-left');
 ```
+## Available Styles
+
+![Available Styles](./images/styles.png)
 
 ## Configuration Options
 
@@ -123,6 +132,8 @@ interface StyleSwitcherClassNames {
   light: string; // Light theme class
 }
 ```
+
+*Example of different map styles that can be used with the style switcher*
 
 ### Option Details
 

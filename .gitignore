@@ -24,8 +24,8 @@ dist-ssr
 *.sw?
 
 # Package lock files
-package-lock.json
-yarn.lock
+# package-lock.json
+# yarn.lock
 # Keep pnpm-lock.yaml for reproducible builds
 # pnpm-lock.yaml
 

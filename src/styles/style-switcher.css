@@ -1,0 +1,196 @@
+/* Override MapLibre GL and Mapbox GL control styles for style switcher */
+.maplibregl-ctrl.style-switcher,
+.mapboxgl-ctrl.style-switcher {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  background: #fff;
+  border-radius: 8px;
+  padding: 8px;
+  transition: box-shadow 0.2s;
+  min-width: unset;
+  width: auto;
+  user-select: none;
+  cursor: pointer;
+  margin: 0;
+  direction: ltr; /* Default LTR */
+}
+
+/* RTL support */
+[dir='rtl'] .maplibregl-ctrl.style-switcher,
+[dir='rtl'] .mapboxgl-ctrl.style-switcher,
+.maplibregl-ctrl.style-switcher[dir='rtl'],
+.mapboxgl-ctrl.style-switcher[dir='rtl'] {
+  direction: rtl;
+}
+
+/* Theme variants */
+.maplibregl-ctrl.style-switcher.style-switcher-dark,
+.mapboxgl-ctrl.style-switcher.style-switcher-dark {
+  background: #2a2a2a;
+  color: #fff;
+  border: 1px solid #444;
+}
+
+.maplibregl-ctrl.style-switcher.style-switcher-light,
+.mapboxgl-ctrl.style-switcher.style-switcher-light {
+  background: #ffffff;
+  color: #333;
+  border: 1px solid #ddd;
+}
+
+/* List container */
+.style-switcher-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* RTL support for list */
+[dir='rtl'] .style-switcher-list,
+.style-switcher-list[dir='rtl'] {
+  direction: rtl;
+}
+
+/* Individual style items */
+.style-switcher-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+  position: relative;
+  overflow: hidden;
+}
+
+.style-switcher-item:hover {
+  background: #f0f8ff;
+  transform: translateY(-1px);
+}
+
+.style-switcher-item.selected {
+  background: #e6f0ff;
+  font-weight: 600;
+  border: 2px solid #0066cc;
+}
+
+/* When labels are hidden, shrink items to image size only */
+.style-switcher-item:not(:has(span)) {
+  min-width: unset;
+  width: 40px;
+  justify-content: center;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/* Hide label span if showLabels is false (for safety) */
+.style-switcher-item.hide-label span {
+  display: none !important;
+}
+
+/* Dark theme item styles */
+.maplibregl-ctrl.style-switcher.style-switcher-dark .style-switcher-item:hover,
+.mapboxgl-ctrl.style-switcher.style-switcher-dark .style-switcher-item:hover {
+  background: #333;
+}
+
+.maplibregl-ctrl.style-switcher.style-switcher-dark
+  .style-switcher-item.selected,
+.mapboxgl-ctrl.style-switcher.style-switcher-dark
+  .style-switcher-item.selected {
+  background: #404040;
+  border-color: #666;
+}
+
+/* Image styles */
+.style-switcher-item img {
+  width: 32px;
+  height: 32px;
+  object-fit: cover;
+  border-radius: 4px;
+  background: #f0f0f0;
+  border: 1px solid #ddd;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+/* Image styles - dark theme */
+.maplibregl-ctrl.style-switcher.style-switcher-dark .style-switcher-item img,
+.mapboxgl-ctrl.style-switcher.style-switcher-dark .style-switcher-item img {
+  background: #555;
+  border-color: #666;
+}
+
+/* Text styles */
+.style-switcher-item span {
+  font-size: 14px;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Accessibility improvements */
+.maplibregl-ctrl.style-switcher:focus,
+.mapboxgl-ctrl.style-switcher:focus {
+  outline: 2px solid #0066cc;
+  outline-offset: 2px;
+}
+
+.style-switcher-item:focus {
+  outline: 2px solid #0066cc;
+  outline-offset: 1px;
+}
+
+/* Animation for expand/collapse */
+.style-switcher-list {
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Scrollbar styling */
+.style-switcher-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.style-switcher-list::-webkit-scrollbar-track {
+  background: #f0f0f0;
+  border-radius: 2px;
+}
+
+.style-switcher-list::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 2px;
+}
+
+/* Scrollbar styling - dark theme */
+.maplibregl-ctrl.style-switcher.style-switcher-dark
+  .style-switcher-list::-webkit-scrollbar-track,
+.mapboxgl-ctrl.style-switcher.style-switcher-dark
+  .style-switcher-list::-webkit-scrollbar-track {
+  background: #2a2a2a;
+}
+
+.maplibregl-ctrl.style-switcher.style-switcher-dark
+  .style-switcher-list::-webkit-scrollbar-thumb,
+.mapboxgl-ctrl.style-switcher.style-switcher-dark
+  .style-switcher-list::-webkit-scrollbar-thumb {
+  background: #555;
+}

@@ -1,0 +1,6 @@
+@import 'maplibre-gl/dist/maplibre-gl.css';
+
+body {
+  padding: 0;
+  margin: 0;
+}

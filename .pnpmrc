@@ -1,0 +1,35 @@
+# Use strict peer dependencies resolution
+strict-peer-dependencies=true
+
+# Auto install missing peer dependencies
+auto-install-peers=true
+
+# Use hard links to save disk space
+link-workspace-packages=true
+
+# Enable hoisting for better performance
+hoist=true
+
+# Use the node_modules structure that Node.js resolves
+node-linker=hoisted
+
+# Disable lockfile versioning to prevent conflicts
+# lockfile-version=false
+
+# Store location (default is ~/.pnpm-store)
+# store-dir=~/.pnpm-store
+
+# Registry configuration
+registry=https://registry.npmjs.org/
+
+# Resolution mode
+resolution-mode=highest
+
+# Dedupe depth
+dedupe-depth=3
+
+# Prefer workspace packages
+prefer-workspace-packages=true
+
+# Ignore workspace root check
+ignore-workspace-root-check=true

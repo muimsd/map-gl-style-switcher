@@ -52,10 +52,16 @@ const styles: StyleItem[] = [
 
 export const App = () => {
   useEffect(() => {
+    const mapContainer = document.getElementById('map');
+    if (!mapContainer) {
+      console.error('Map container not found!');
+      return;
+    }
+
     const map = new maplibregl.Map({
       container: 'map',
-      // Use OpenMapTiles free vector style
-      style: styles[3].styleUrl,
+      // Use a simple, reliable style first
+      style: 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
       // Center on Dubai, UAE
       center: [55.2708, 25.2048],
       zoom: 10,
@@ -74,7 +80,7 @@ export const App = () => {
       styles: styles,
       theme: 'light',
       showLabels: true,
-      showImages: true,
+      showImages: false,
       activeStyleId: 'arcgis-hybrid',
       onBeforeStyleChange: (from, to) => {
         console.log('Changing style from', from.name, 'to', to.name);
@@ -86,22 +92,20 @@ export const App = () => {
     });
     map.addControl(styleSwitcher, 'bottom-left');
 
-    return () => map.remove();
-  }, []); // Empty dependency array since styles is static
+    return () => {
+      map.remove();
+    };
+  }, []); // Empty dependency array
 
   return (
-    <div style={{ margin: '12px' }}>
+    <div>
       <div
         id="map"
         style={{
           width: '100vw',
           height: '100vh',
-          position: 'absolute',
-          top: 0,
-          left: 0,
         }}
       />
-      {/* ...other UI, e.g. style switcher... */}
     </div>
   );
 };

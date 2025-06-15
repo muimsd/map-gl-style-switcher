@@ -4,5 +4,4 @@ export type {
   StyleItem,
   StyleSwitcherControlOptions,
   StyleSwitcherClassNames,
-  IControl,
 } from './components/StyleSwitcherControl';

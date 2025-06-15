@@ -1,6 +1,6 @@
 {
   "name": "map-gl-style-changer",
-  "version": "0.0.1-beta",
+  "version": "0.5.0",
   "description": "A customizable style switcher control for Mapbox GL JS and MapLibre GL JS",
   "type": "module",
   "main": "dist/index.js",

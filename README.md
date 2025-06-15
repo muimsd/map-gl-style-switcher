@@ -2,10 +2,18 @@
 
 [![npm version](https://badge.fury.io/js/map-gl-style-changer.svg)](https://badge.fury.io/js/map-gl-style-changer)
 [![CI](https://github.com/muimsd/map-gl-style-changer/actions/workflows/ci.yml/badge.svg)](https://github.com/muimsd/map-gl-style-changer/actions/workflows/ci.yml)
+
 <!-- [![Coverage Status](https://codecov.io/gh/muimsd/map-gl-style-changer/branch/main/graph/badge.svg)](https://codecov.io/gh/muimsd/map-gl-style-changer) -->
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A TypeScript control for switching Mapbox GL / MapLibre GL map styles. Easily add a floating style switcher to your map app, with support for multiple styles, images, dark/light themes, and before/after change callbacks.
+
+## Demo
+
+![Demo GIF](./images/demo.gif)
+
+*Live demo of the style switcher control in action*
 
 ## Features
 
@@ -20,7 +28,6 @@ A TypeScript control for switching Mapbox GL / MapLibre GL map styles. Easily ad
 - Fully customizable CSS classes
 - TypeScript support
 - Accessibility features (ARIA labels, keyboard navigation)
-
 
 ## Install
 
@@ -44,92 +51,97 @@ import maplibregl from 'maplibre-gl';
 import { StyleSwitcherControl } from 'map-gl-style-changer';
 import 'map-gl-style-changer/dist/map-gl-style-changer.css';
 
-// Create map
-const map = new maplibregl.Map({
-  container: 'map',
-  style: 'https://demotiles.maplibre.org/style.json',
-  center: [0, 0],
-  zoom: 2
-});
-
 // Define styles
 const styles = [
   {
     id: 'basic',
     name: 'Basic',
     image: 'path/to/thumbnail.png',
-    styleUrl: 'https://demotiles.maplibre.org/style.json'
+    styleUrl: 'https://demotiles.maplibre.org/style.json',
   },
   {
     id: 'satellite',
     name: 'Satellite',
-    image: 'path/to/satellite-thumb.png', 
-    styleUrl: 'https://your-satellite-style.json'
-  }
+    image: 'path/to/satellite-thumb.png',
+    styleUrl: 'https://your-satellite-style.json',
+  },
   // ... more styles
 ];
+const defaultStyle = styles[0];
+// Create map
+const map = new maplibregl.Map({
+  container: 'map',
+  style: defaultStyle.styleUrl,
+  center: [0, 0],
+  zoom: 2,
+});
 
 // Add style switcher control
 const styleSwitcher = new StyleSwitcherControl({
   styles: styles,
-  theme: 'auto', // 'light', 'dark', or 'auto'
+  theme: 'light', // 'light', 'dark', or 'auto'
   showLabels: true,
   showImages: true,
-  
+  activeStyleId: defaultStyle.id,
   onBeforeStyleChange: (from, to) => {
     console.log(`Switching from ${from.name} to ${to.name}`);
   },
   onAfterStyleChange: (from, to) => {
     map.setStyle(to.styleUrl);
-  }
+  },
 });
 
 map.addControl(styleSwitcher, 'bottom-left');
 ```
+## Available Styles
+
+![Available Styles](./images/styles.png)
 
 ## Configuration Options
 
 ```ts
 interface StyleSwitcherControlOptions {
-  styles: StyleItem[];                    // Array of map styles (required)
-  activeStyleId?: string;                 // Currently active style ID (default: first style)
+  styles: StyleItem[]; // Array of map styles (required)
+  activeStyleId?: string; // Currently active style ID (default: first style)
   onBeforeStyleChange?: (from: StyleItem, to: StyleItem) => void; // Callback before style change
-  onAfterStyleChange?: (from: StyleItem, to: StyleItem) => void;  // Callback after style change
-  showLabels?: boolean;                   // Show style names (default: true)
-  showImages?: boolean;                   // Show style thumbnails (default: true)
-  animationDuration?: number;             // Animation duration in ms (default: 200)
-  maxHeight?: number;                     // Max height of expanded list (default: 300)
-  theme?: 'light' | 'dark' | 'auto';     // UI theme (default: 'light')
+  onAfterStyleChange?: (from: StyleItem, to: StyleItem) => void; // Callback after style change
+  showLabels?: boolean; // Show style names (default: true)
+  showImages?: boolean; // Show style thumbnails (default: true)
+  animationDuration?: number; // Animation duration in ms (default: 200)
+  maxHeight?: number; // Max height of expanded list (default: 300)
+  theme?: 'light' | 'dark' | 'auto'; // UI theme (default: 'light')
   classNames?: Partial<StyleSwitcherClassNames>; // Custom CSS classes
-  rtl?: boolean;                          // Enable RTL layout (default: false)
+  rtl?: boolean; // Enable RTL layout (default: false)
 }
 
 interface StyleItem {
-  id: string;          // Unique identifier
-  name: string;        // Display name
-  image: string;       // Thumbnail URL or data URI
-  styleUrl: string;    // MapLibre/Mapbox style URL
+  id: string; // Unique identifier
+  name: string; // Display name
+  image: string; // Thumbnail URL or data URI
+  styleUrl: string; // MapLibre/Mapbox style URL
   description?: string; // Optional tooltip text
 }
 
 interface StyleSwitcherClassNames {
-  container: string;      // Main container class
-  list: string;          // Expanded list container class
-  item: string;          // Individual style item class
-  itemSelected: string;  // Selected style item class
+  container: string; // Main container class
+  list: string; // Expanded list container class
+  item: string; // Individual style item class
+  itemSelected: string; // Selected style item class
   itemHideLabel: string; // Hide label utility class
-  dark: string;          // Dark theme class
-  light: string;         // Light theme class
+  dark: string; // Dark theme class
+  light: string; // Light theme class
 }
 ```
+
+*Example of different map styles that can be used with the style switcher*
 
 ### Option Details
 
 - **`activeStyleId`**: Controls both the initially selected style and what's displayed in the collapsed state
 - **`showLabels`** & **`showImages`**: At least one must be `true`
-- **`theme`**: 
+- **`theme`**:
   - `'light'`: Light color scheme
-  - `'dark'`: Dark color scheme  
+  - `'dark'`: Dark color scheme
   - `'auto'`: Auto-detect from system preference
 - **`rtl`**: Enables right-to-left layout for Arabic/Hebrew interfaces
 
@@ -152,7 +164,7 @@ const styleSwitcher = new StyleSwitcherControl({
     itemHideLabel: 'my-style-item-hide-label',
     dark: 'my-style-dark',
     light: 'my-style-light',
-  }
+  },
 });
 ```
 
@@ -249,27 +261,32 @@ We welcome contributions! Please feel free to submit a Pull Request. For major c
 ### Development Setup
 
 1. **Clone the repository**
+
    ```sh
    git clone https://github.com/muimsd/map-gl-style-changer
    cd map-gl-style-changer
    ```
 
 2. **Install dependencies**
+
    ```sh
    pnpm install
    ```
 
 3. **Start development server**
+
    ```sh
    pnpm dev
    ```
 
 4. **Make your changes**
+
    - Follow TypeScript best practices
    - Maintain backward compatibility when possible
    - Add tests for new features
 
 5. **Test your changes**
+
    ```sh
    pnpm validate  # Runs type-check, lint, format-check, and tests
    ```
@@ -310,6 +327,7 @@ MIT License - see [LICENSE](LICENSE) file for details.
 ## Author
 
 **Muhammad Imran Siddique**
+
 - GitHub: [@muimsd](https://github.com/muimsd)
 
 ## Repository

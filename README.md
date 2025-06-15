@@ -2,7 +2,7 @@
 
 [![npm version](https://badge.fury.io/js/map-gl-style-changer.svg)](https://badge.fury.io/js/map-gl-style-changer)
 [![CI](https://github.com/muimsd/map-gl-style-changer/actions/workflows/ci.yml/badge.svg)](https://github.com/muimsd/map-gl-style-changer/actions/workflows/ci.yml)
-[![Coverage Status](https://codecov.io/gh/muimsd/map-gl-style-changer/branch/main/graph/badge.svg)](https://codecov.io/gh/muimsd/map-gl-style-changer)
+<!-- [![Coverage Status](https://codecov.io/gh/muimsd/map-gl-style-changer/branch/main/graph/badge.svg)](https://codecov.io/gh/muimsd/map-gl-style-changer) -->
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A TypeScript control for switching Mapbox GL / MapLibre GL map styles. Easily add a floating style switcher to your map app, with support for multiple styles, images, dark/light themes, and before/after change callbacks.

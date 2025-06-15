@@ -57,11 +57,11 @@ export const App = () => {
       console.error('Map container not found!');
       return;
     }
-
+    const defaultStyle = styles[0];
     const map = new maplibregl.Map({
       container: 'map',
       // Use a simple, reliable style first
-      style: 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
+      style: defaultStyle.styleUrl,
       // Center on Dubai, UAE
       center: [55.2708, 25.2048],
       zoom: 10,
@@ -80,8 +80,8 @@ export const App = () => {
       styles: styles,
       theme: 'light',
       showLabels: true,
-      showImages: false,
-      activeStyleId: 'arcgis-hybrid',
+      showImages: true,
+      activeStyleId: defaultStyle.id,
       onBeforeStyleChange: (from, to) => {
         console.log('Changing style from', from.name, 'to', to.name);
       },

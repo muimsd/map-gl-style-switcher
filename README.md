@@ -9,6 +9,8 @@
 
 A TypeScript control for switching Mapbox GL / MapLibre GL map styles. Easily add a floating style switcher to your map app, with support for multiple styles, images, dark/light themes, and before/after change callbacks.
 
+**[🌐 Live Demo](https://map-gl-style-changer.netlify.app/)**
+
 ## Demo
 
 ![Demo GIF](./images/demo.gif)

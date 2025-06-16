@@ -1,15 +1,15 @@
 # Map GL Style Switcher
 
-[![npm version](https://badge.fury.io/js/map-gl-style-changer.svg)](https://badge.fury.io/js/map-gl-style-changer)
-[![CI](https://github.com/muimsd/map-gl-style-changer/actions/workflows/ci.yml/badge.svg)](https://github.com/muimsd/map-gl-style-changer/actions/workflows/ci.yml)
+[![npm version](https://badge.fury.io/js/map-gl-style-switcher.svg)](https://badge.fury.io/js/map-gl-style-switcher)
+[![CI](https://github.com/muimsd/map-gl-style-switcher/actions/workflows/ci.yml/badge.svg)](https://github.com/muimsd/map-gl-style-switcher/actions/workflows/ci.yml)
 
-<!-- [![Coverage Status](https://codecov.io/gh/muimsd/map-gl-style-changer/branch/main/graph/badge.svg)](https://codecov.io/gh/muimsd/map-gl-style-changer) -->
+<!-- [![Coverage Status](https://codecov.io/gh/muimsd/map-gl-style-switcher/branch/main/graph/badge.svg)](https://codecov.io/gh/muimsd/map-gl-style-switcher) -->
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A TypeScript control for switching Mapbox GL / MapLibre GL map styles. Easily add a floating style switcher to your map app, with support for multiple styles, images, dark/light themes, and before/after change callbacks.
 
-**[🌐 Live Demo](https://map-gl-style-changer.netlify.app/)**
+**[🌐 Live Demo](https://map-gl-style-switcher.netlify.app/)**
 
 ## Demo
 
@@ -35,13 +35,13 @@ A TypeScript control for switching Mapbox GL / MapLibre GL map styles. Easily ad
 
 ```sh
 # Using npm (recommended)
-npm install map-gl-style-changer
+npm install map-gl-style-switcher
 
 # Using yarn
-yarn add map-gl-style-changer
+yarn add map-gl-style-switcher
 
 # Using pnpm
-pnpm add map-gl-style-changer
+pnpm add map-gl-style-switcher
 ```
 
 ## Usage
@@ -50,8 +50,8 @@ pnpm add map-gl-style-changer
 
 ```ts
 import maplibregl from 'maplibre-gl';
-import { StyleSwitcherControl } from 'map-gl-style-changer';
-import 'map-gl-style-changer/dist/map-gl-style-changer.css';
+import { StyleSwitcherControl } from 'map-gl-style-switcher';
+import 'map-gl-style-switcher/dist/map-gl-style-switcher.css';
 
 // Define styles
 const styles = [
@@ -152,7 +152,7 @@ interface StyleSwitcherClassNames {
 You can override all CSS classes used by the style switcher control using the `classNames` option:
 
 ```ts
-import { StyleSwitcherControl } from 'map-gl-style-changer';
+import { StyleSwitcherControl } from 'map-gl-style-switcher';
 
 const styleSwitcher = new StyleSwitcherControl({
   styles,
@@ -196,7 +196,7 @@ map-gl-style-switcher/
 │   ├── index.js                       # ES Module
 │   ├── index.umd.js                   # UMD Module
 │   ├── index.d.ts                     # TypeScript declarations
-│   └── map-gl-style-changer.css       # Bundled CSS
+│   └── map-gl-style-switcher.css       # Bundled CSS
 ├── package.json                       # Package configuration
 ├── rollup.config.js                   # Production build configuration
 ├── vite.config.ts                     # Development build configuration
@@ -247,7 +247,7 @@ The project uses Rollup for optimized production builds, generating:
 - `dist/index.js` - ES module format
 - `dist/index.umd.js` - UMD format for browser usage
 - `dist/index.d.ts` - TypeScript declarations
-- `dist/map-gl-style-changer.css` - Minified CSS styles
+- `dist/map-gl-style-switcher.css` - Minified CSS styles
 
 ```sh
 # Standard build
@@ -266,8 +266,8 @@ We welcome contributions! Please feel free to submit a Pull Request. For major c
 1. **Clone the repository**
 
    ```sh
-   git clone https://github.com/muimsd/map-gl-style-changer
-   cd map-gl-style-changer
+   git clone https://github.com/muimsd/map-gl-style-switcher
+   cd map-gl-style-switcher
    ```
 
 2. **Install dependencies**
@@ -335,8 +335,8 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ## Repository
 
-- GitHub: [https://github.com/muimsd/map-gl-style-changer](https://github.com/muimsd/map-gl-style-changer)
-- Issues: [https://github.com/muimsd/map-gl-style-changer/issues](https://github.com/muimsd/map-gl-style-changer/issues)
+- GitHub: [https://github.com/muimsd/map-gl-style-switcher](https://github.com/muimsd/map-gl-style-switcher)
+- Issues: [https://github.com/muimsd/map-gl-style-switcher/issues](https://github.com/muimsd/map-gl-style-switcher/issues)
 
 ---
 

@@ -97,12 +97,39 @@ export const App = () => {
   }, []); // Empty dependency array
 
   return (
-    <div>
+    <div
+      style={{
+        padding: '40px',
+        backgroundColor: '#f5f5f5',
+        minHeight: '100vh',
+        boxSizing: 'border-box',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      <h1
+        style={{
+          textAlign: 'center',
+          marginBottom: '30px',
+          color: '#333',
+          fontSize: '2rem',
+          fontWeight: '600',
+          margin: '0 0 30px 0',
+        }}
+      >
+        Map Style Switcher Demo
+      </h1>
       <div
         id="map"
         style={{
-          width: '100vw',
-          height: '100vh',
+          width: '100%',
+          height: '100%',
+          flex: 1,
+          border: '1px solid #ddd',
+          borderRadius: '12px',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+          overflow: 'hidden',
+          minHeight: '500px',
         }}
       />
     </div>

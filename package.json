@@ -37,6 +37,7 @@
     "url": "https://github.com/muimsd/map-gl-style-changer/issues"
   },
   "homepage": "https://github.com/muimsd/map-gl-style-changer#readme",
+  "demo": "https://map-gl-style-changer.netlify.app",
   "peerDependencies": {
     "mapbox-gl": ">=1.0.0",
     "maplibre-gl": ">=2.0.0"
@@ -54,6 +55,8 @@
     "build": "npm run clean && npm run type-check && rollup -c",
     "build:prod": "npm run clean && npm run type-check && npm run lint && rollup -c",
     "build:watch": "rollup -c --watch",
+    "build:example": "vite build --outDir dist-demo",
+    "preview:example": "vite preview --outDir dist-demo",
     "clean": "rimraf dist",
     "type-check": "tsc --noEmit",
     "type-check:watch": "tsc --noEmit --watch",
@@ -65,7 +68,6 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:ci": "jest --ci --coverage --watchAll=false",
-    "preview": "vite preview",
     "validate": "npm run type-check && npm run lint && npm run format:check && npm run test:ci",
     "release:patch": "npm version patch && npm publish",
     "release:minor": "npm version minor && npm publish",

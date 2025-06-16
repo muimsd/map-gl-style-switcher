@@ -13,6 +13,7 @@ node_modules/
 
 # Build artifacts
 dist/demo/
+dist-demo/
 
 # Development and testing
 *.log

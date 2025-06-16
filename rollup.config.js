@@ -32,8 +32,8 @@ const copyCSS = () => ({
       .trim();
     
     // Write to dist folder
-    writeFileSync('dist/map-gl-style-changer.css', minifiedCSS);
-    console.log('✓ CSS file copied and minified to dist/map-gl-style-changer.css');
+    writeFileSync('dist/map-gl-style-switcher.css', minifiedCSS);
+    console.log('✓ CSS file copied and minified to dist/map-gl-style-switcher.css');
   }
 });
 
@@ -51,7 +51,7 @@ const mainConfig = {
     {
       file: 'dist/index.umd.js',
       format: 'umd',
-      name: 'MapGLStyleChanger',
+      name: 'MapGLStyleSwitcher',
       sourcemap: true,
       exports: 'named',
       globals: {

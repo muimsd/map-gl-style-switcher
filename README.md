@@ -6,7 +6,7 @@
 <!-- [![Coverage Status](https://codecov.io/gh/muimsd/map-gl-style-switcher/branch/main/graph/badge.svg)](https://codecov.io/gh/muimsd/map-gl-style-switcher) -->
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
+[![Netlify Status](https://api.netlify.com/api/v1/badges/ea3ee6af-161d-46be-9006-9d31ad52da3c/deploy-status)](https://app.netlify.com/projects/map-gl-style-switcher/deploys)
 A TypeScript control for switching Mapbox GL / MapLibre GL map styles. Easily add a floating style switcher to your map app, with support for multiple styles, images, dark/light themes, and before/after change callbacks.
 
 **[🌐 Live Demo](https://map-gl-style-switcher.netlify.app/)**
@@ -98,6 +98,57 @@ map.addControl(styleSwitcher, 'bottom-left');
 ## Available Styles
 
 ![Available Styles](./images/styles.png)
+
+The style switcher supports various map styles. Here are some popular options you can use:
+
+### Carto Basemaps
+- **Voyager** - A balanced, colorful style perfect for data visualization and general mapping applications
+- **Positron** - A clean, minimal light basemap ideal for overlaying data with maximum contrast
+- **Dark Matter** - A dark theme basemap excellent for creating striking data visualizations and night mode interfaces
+
+### Satellite & Hybrid
+- **ArcGIS Hybrid** - Combines satellite imagery with street labels, perfect for geographic context and navigation
+- **Satellite** - High-resolution satellite imagery for detailed geographic analysis
+
+### OpenStreetMap
+- **OSM (OpenStreetMap)** - Community-driven open-source mapping with detailed street-level information
+
+### Example Styles Configuration
+
+```ts
+const styles = [
+  {
+    id: 'voyager',
+    name: 'Voyager',
+    image: './voyager.png',
+    styleUrl: 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
+    description: 'Balanced, colorful style perfect for data visualization',
+  },
+  {
+    id: 'positron',
+    name: 'Positron', 
+    image: './positron.png',
+    styleUrl: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+    description: 'Clean, minimal light basemap ideal for data overlays',
+  },
+  {
+    id: 'dark-matter',
+    name: 'Dark Matter',
+    image: './dark.png',
+    styleUrl: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+    description: 'Dark theme perfect for striking data visualizations',
+  },
+  {
+    id: 'satellite',
+    name: 'Satellite',
+    image: './satellite.png',
+    styleUrl: 'https://your-satellite-style-url.json',
+    description: 'High-resolution satellite imagery for detailed analysis',
+  },
+];
+```
+
+> **Note**: The `description` property is optional and will be shown as a tooltip when users hover over a style option.
 
 ## Configuration Options
 

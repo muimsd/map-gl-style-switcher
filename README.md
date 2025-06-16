@@ -32,14 +32,14 @@ A TypeScript control for switching Mapbox GL / MapLibre GL map styles. Easily ad
 ## Install
 
 ```sh
-# Using pnpm (recommended)
-pnpm add map-gl-style-changer
-
-# Using npm
-npm install map-gl-style-changer --save
+# Using npm (recommended)
+npm install map-gl-style-changer
 
 # Using yarn
 yarn add map-gl-style-changer
+
+# Using pnpm
+pnpm add map-gl-style-changer
 ```
 
 ## Usage
@@ -205,36 +205,37 @@ map-gl-style-switcher/
 
 ## Development
 
-This project uses [pnpm](https://pnpm.io/) for dependency management, which provides better performance and disk space efficiency.
+This project uses npm for dependency management.
 
 ### Prerequisites
 
 ```sh
-# Install pnpm globally if you haven't already
-npm install -g pnpm
+# Ensure you have Node.js 16+ and npm 8+ installed
+node --version
+npm --version
 ```
 
 ### Quick Start
 
 ```sh
 # Install dependencies
-pnpm install
+npm install
 
 # Start development server
-pnpm dev
+npm run dev
 
 # Build for production
-pnpm build
+npm run build
 
 # Run tests
-pnpm test
+npm test
 
 # Lint and format code
-pnpm lint
-pnpm format
+npm run lint
+npm run format
 
 # Validate before publishing
-pnpm validate
+npm run validate
 ```
 
 ## Build for npm
@@ -248,10 +249,10 @@ The project uses Rollup for optimized production builds, generating:
 
 ```sh
 # Standard build
-pnpm build
+npm run build
 
 # Production build with full validation
-pnpm build:prod
+npm run build:prod
 ```
 
 ## Contributing
@@ -270,13 +271,13 @@ We welcome contributions! Please feel free to submit a Pull Request. For major c
 2. **Install dependencies**
 
    ```sh
-   pnpm install
+   npm install
    ```
 
 3. **Start development server**
 
    ```sh
-   pnpm dev
+   npm run dev
    ```
 
 4. **Make your changes**
@@ -288,37 +289,37 @@ We welcome contributions! Please feel free to submit a Pull Request. For major c
 5. **Test your changes**
 
    ```sh
-   pnpm validate  # Runs type-check, lint, format-check, and tests
+   npm run validate  # Runs type-check, lint, format-check, and tests
    ```
 
 6. **Submit a pull request**
 
 ### Available Scripts
 
-- `pnpm dev` - Start development server with hot reload
-- `pnpm build` - Build library with Rollup (ES modules, UMD, TypeScript declarations, and CSS)
-- `pnpm build:prod` - Production build with validation (type-check, lint, and build)
-- `pnpm build:watch` - Build in watch mode with Rollup
-- `pnpm test` - Run tests
-- `pnpm test:watch` - Run tests in watch mode
-- `pnpm test:coverage` - Run tests with coverage
-- `pnpm lint` - Lint code
-- `pnpm lint:fix` - Lint and auto-fix issues
-- `pnpm format` - Format code with Prettier
-- `pnpm format:check` - Check code formatting
-- `pnpm validate` - Run all validation checks
-- `pnpm type-check` - Type check TypeScript
-- `pnpm clean` - Clean build artifacts
+- `npm run dev` - Start development server with hot reload
+- `npm run build` - Build library with Rollup (ES modules, UMD, TypeScript declarations, and CSS)
+- `npm run build:prod` - Production build with validation (type-check, lint, and build)
+- `npm run build:watch` - Build in watch mode with Rollup
+- `npm test` - Run tests
+- `npm run test:watch` - Run tests in watch mode
+- `npm run test:coverage` - Run tests with coverage
+- `npm run lint` - Lint code
+- `npm run lint:fix` - Lint and auto-fix issues
+- `npm run format` - Format code with Prettier
+- `npm run format:check` - Check code formatting
+- `npm run validate` - Run all validation checks
+- `npm run type-check` - Type check TypeScript
+- `npm run clean` - Clean build artifacts
 
 ### Guidelines
 
-- Use pnpm for dependency management
+- Use npm for dependency management
 - Follow TypeScript best practices
 - Maintain backward compatibility when possible
 - Add tests for new features
 - Update documentation as needed
 - Follow the existing code style
-- Ensure all checks pass: `pnpm validate`
+- Ensure all checks pass: `npm run validate`
 
 ## License
 

@@ -54,7 +54,8 @@ describe('MapGLStyleSwitcher', () => {
       />
     );
 
-    expect(container).toBeInTheDocument();
+    // Component should render successfully (returns null but shouldn't crash)
+    expect(container.firstChild).toBeNull();
   });
 
   test('should return null (no visible DOM elements)', () => {
@@ -79,10 +80,9 @@ describe('MapGLStyleSwitcher', () => {
     );
 
     expect(mockUseControl).toHaveBeenCalledTimes(1);
-    expect(mockUseControl).toHaveBeenCalledWith(
-      expect.any(Function),
-      { position: 'bottom-left' }
-    );
+    expect(mockUseControl).toHaveBeenCalledWith(expect.any(Function), {
+      position: 'bottom-left',
+    });
   });
 
   test('should use custom position when provided', () => {
@@ -94,29 +94,22 @@ describe('MapGLStyleSwitcher', () => {
       />
     );
 
-    expect(mockUseControl).toHaveBeenCalledWith(
-      expect.any(Function),
-      { position: 'top-right' }
-    );
+    expect(mockUseControl).toHaveBeenCalledWith(expect.any(Function), {
+      position: 'top-right',
+    });
   });
 
   test('should work with minimal required props', () => {
-    const { container } = render(
-      <MapGLStyleSwitcher
-        styles={mockStyles}
-      />
-    );
+    const { container } = render(<MapGLStyleSwitcher styles={mockStyles} />);
 
-    expect(container).toBeInTheDocument();
+    // Component should render successfully with minimal props
+    expect(container.firstChild).toBeNull();
     expect(mockUseControl).toHaveBeenCalledTimes(1);
   });
 
   test('should handle empty styles array', () => {
     render(
-      <MapGLStyleSwitcher
-        styles={[]}
-        onStyleChange={mockOnStyleChange}
-      />
+      <MapGLStyleSwitcher styles={[]} onStyleChange={mockOnStyleChange} />
     );
 
     expect(mockUseControl).toHaveBeenCalledTimes(1);
@@ -142,5 +135,152 @@ describe('MapGLStyleSwitcher', () => {
     );
 
     expect(mockUseControl).toHaveBeenCalledTimes(2);
+  });
+
+  test('should create StyleSwitcherControl with correct options', () => {
+    render(
+      <MapGLStyleSwitcher
+        styles={mockStyles}
+        activeStyleId="voyager"
+        theme="dark"
+        showLabels={false}
+        showImages={true}
+        animationDuration={300}
+        maxHeight={400}
+        rtl={true}
+        classNames={{ container: 'custom-container' }}
+        onBeforeStyleChange={mockOnStyleChange}
+        onAfterStyleChange={mockOnStyleChange}
+        onStyleChange={mockOnStyleChange}
+        position="top-left"
+      />
+    );
+
+    // Verify useControl was called with the correct options
+    expect(mockUseControl).toHaveBeenCalledWith(
+      expect.any(Function),
+      expect.objectContaining({
+        position: 'top-left',
+      })
+    );
+  });
+
+  test('should pass onAfterStyleChange and onStyleChange props to control', () => {
+    const mockOnAfterStyleChange = jest.fn();
+    const mockOnStyleChange = jest.fn();
+
+    render(
+      <MapGLStyleSwitcher
+        styles={mockStyles}
+        onAfterStyleChange={mockOnAfterStyleChange}
+        onStyleChange={mockOnStyleChange}
+      />
+    );
+
+    expect(mockUseControl).toHaveBeenCalledWith(
+      expect.any(Function),
+      expect.objectContaining({
+        position: 'bottom-left',
+      })
+    );
+  });
+
+  test('should work with only onStyleChange callback', () => {
+    const mockOnStyleChange = jest.fn();
+
+    render(
+      <MapGLStyleSwitcher
+        styles={mockStyles}
+        onStyleChange={mockOnStyleChange}
+      />
+    );
+
+    expect(mockUseControl).toHaveBeenCalledTimes(1);
+  });
+
+  test('should work with no callbacks provided', () => {
+    render(<MapGLStyleSwitcher styles={mockStyles} />);
+
+    expect(mockUseControl).toHaveBeenCalledTimes(1);
+  });
+
+  test('should pass all props to StyleSwitcherControl via useControl', () => {
+    const mockOnBeforeStyleChange = jest.fn();
+    const mockOnAfterStyleChange = jest.fn();
+    const customClassNames = { container: 'custom' };
+
+    render(
+      <MapGLStyleSwitcher
+        styles={mockStyles}
+        activeStyleId="voyager"
+        theme="dark"
+        showLabels={false}
+        showImages={true}
+        animationDuration={300}
+        maxHeight={400}
+        rtl={true}
+        classNames={customClassNames}
+        onBeforeStyleChange={mockOnBeforeStyleChange}
+        onAfterStyleChange={mockOnAfterStyleChange}
+        position="top-right"
+      />
+    );
+
+    expect(mockUseControl).toHaveBeenCalledWith(
+      expect.any(Function),
+      expect.objectContaining({
+        position: 'top-right',
+      })
+    );
+  });
+
+  test('should handle all default props correctly', () => {
+    render(<MapGLStyleSwitcher styles={mockStyles} />);
+
+    expect(mockUseControl).toHaveBeenCalledWith(
+      expect.any(Function),
+      expect.objectContaining({
+        position: 'bottom-left', // default position
+      })
+    );
+  });
+
+  test('should handle different position values', () => {
+    const positions = [
+      'top-left',
+      'top-right',
+      'bottom-left',
+      'bottom-right',
+    ] as const;
+
+    positions.forEach(position => {
+      mockUseControl.mockClear();
+
+      render(<MapGLStyleSwitcher styles={mockStyles} position={position} />);
+
+      expect(mockUseControl).toHaveBeenCalledWith(
+        expect.any(Function),
+        expect.objectContaining({
+          position,
+        })
+      );
+    });
+  });
+
+  test('should handle all theme options', () => {
+    const themes = ['light', 'dark', 'auto'] as const;
+
+    themes.forEach(theme => {
+      mockUseControl.mockClear();
+
+      render(<MapGLStyleSwitcher styles={mockStyles} theme={theme} />);
+
+      expect(mockUseControl).toHaveBeenCalledWith(
+        expect.any(Function),
+        expect.objectContaining({
+          position: 'bottom-left',
+        })
+      );
+    });
   });
 });

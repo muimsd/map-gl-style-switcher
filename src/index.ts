@@ -5,3 +5,6 @@ export type {
   StyleSwitcherControlOptions,
   StyleSwitcherClassNames,
 } from './components/StyleSwitcherControl';
+
+// React component (requires react-map-gl to be installed separately)
+export { StyleSwitcher } from './components/StyleSwitcher';

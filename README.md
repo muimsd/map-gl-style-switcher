@@ -2,11 +2,10 @@
 
 [![npm version](https://badge.fury.io/js/map-gl-style-switcher.svg)](https://badge.fury.io/js/map-gl-style-switcher)
 [![CI](https://github.com/muimsd/map-gl-style-switcher/actions/workflows/ci.yml/badge.svg)](https://github.com/muimsd/map-gl-style-switcher/actions/workflows/ci.yml)
-
-<!-- [![Coverage Status](https://codecov.io/gh/muimsd/map-gl-style-switcher/branch/main/graph/badge.svg)](https://codecov.io/gh/muimsd/map-gl-style-switcher) -->
-
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Netlify Status](https://api.netlify.com/api/v1/badges/ea3ee6af-161d-46be-9006-9d31ad52da3c/deploy-status)](https://app.netlify.com/projects/map-gl-style-switcher/deploys)
+<!-- [![Coverage Status](https://codecov.io/gh/muimsd/map-gl-style-switcher/branch/main/graph/badge.svg)](https://codecov.io/gh/muimsd/map-gl-style-switcher) -->
+
 A TypeScript control for switching Mapbox GL / MapLibre GL map styles. Easily add a floating style switcher to your map app, with support for multiple styles, images, dark/light themes, and before/after change callbacks.
 
 **[🌐 Live Demo](https://map-gl-style-switcher.netlify.app/)**
@@ -94,6 +93,117 @@ const styleSwitcher = new StyleSwitcherControl({
 });
 
 map.addControl(styleSwitcher, 'bottom-left');
+```
+
+### React Integration with react-map-gl
+
+For React applications using `react-map-gl`, you can create a reusable component:
+
+```tsx
+import React, { useEffect, useRef } from 'react';
+import { useControl } from 'react-map-gl';
+import { StyleSwitcherControl } from 'map-gl-style-switcher';
+import type { StyleItem } from 'map-gl-style-switcher';
+
+interface StyleSwitcherProps {
+  styles: StyleItem[];
+  activeStyleId?: string;
+  theme?: 'light' | 'dark' | 'auto';
+  showLabels?: boolean;
+  showImages?: boolean;
+  onStyleChange?: (styleUrl: string) => void;
+  position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+}
+
+export const StyleSwitcher: React.FC<StyleSwitcherProps> = ({
+  styles,
+  activeStyleId,
+  theme = 'light',
+  showLabels = true,
+  showImages = true,
+  onStyleChange,
+  position = 'bottom-left'
+}) => {
+  const controlRef = useRef<StyleSwitcherControl | null>(null);
+
+  useControl(() => {
+    const control = new StyleSwitcherControl({
+      styles,
+      activeStyleId,
+      theme,
+      showLabels,
+      showImages,
+      onAfterStyleChange: (from, to) => {
+        onStyleChange?.(to.styleUrl);
+      },
+    });
+    
+    controlRef.current = control;
+    return control;
+  }, {
+    position,
+  });
+
+  return null;
+};
+```
+
+**Usage in your React component:**
+
+```tsx
+import React, { useState } from 'react';
+import Map from 'react-map-gl/maplibre';
+import { StyleSwitcher } from './StyleSwitcher';
+import 'map-gl-style-switcher/dist/map-gl-style-switcher.css';
+
+const styles = [
+  {
+    id: 'voyager',
+    name: 'Voyager',
+    image: './voyager.png',
+    styleUrl: 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
+    description: 'Balanced, colorful style perfect for data visualization',
+  },
+  {
+    id: 'positron',
+    name: 'Positron',
+    image: './positron.png',
+    styleUrl: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+    description: 'Clean, minimal light basemap ideal for data overlays',
+  },
+  // ... more styles
+];
+
+export const MapComponent = () => {
+  const [mapStyle, setMapStyle] = useState(styles[0].styleUrl);
+
+  return (
+    <Map
+      mapLib={import('maplibre-gl')}
+      initialViewState={{
+        longitude: 0,
+        latitude: 0,
+        zoom: 2
+      }}
+      style={{ width: '100%', height: '100vh' }}
+      mapStyle={mapStyle}
+    >
+      <StyleSwitcher
+        styles={styles}
+        activeStyleId={styles[0].id}
+        theme="auto"
+        onStyleChange={setMapStyle}
+        position="bottom-left"
+      />
+    </Map>
+  );
+};
+```
+
+**Installation for React:**
+
+```sh
+npm install react-map-gl maplibre-gl map-gl-style-switcher
 ```
 ## Available Styles
 

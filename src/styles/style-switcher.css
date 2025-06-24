@@ -4,7 +4,7 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   background: #fff;
   border-radius: 8px;
-  padding: 8px;
+  padding: 4px;
   margin: 8px;
   transition: box-shadow 0.2s;
   min-width: unset;
@@ -41,7 +41,7 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  margin-bottom: 8px;
+  padding: 4px 0px;
   max-height: 300px;
   overflow-y: auto;
   overflow-x: hidden;
@@ -57,9 +57,9 @@
 .style-switcher-item {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   cursor: pointer;
-  padding: 6px 8px;
+  padding: 2px 4px;
   border-radius: 6px;
   transition: all 0.2s ease;
   border: 2px solid transparent;
@@ -75,7 +75,7 @@
 .style-switcher-item.selected {
   background: #e6f0ff;
   font-weight: 600;
-  border: 2px solid #0066cc;
+  border: 1px solid #0066cc;
 }
 
 /* When labels are hidden, shrink items to image size only */
@@ -140,7 +140,7 @@
 .maplibregl-ctrl.style-switcher:focus,
 .mapboxgl-ctrl.style-switcher:focus {
   outline: 2px solid #0066cc;
-  outline-offset: 2px;
+  outline-offset: 1px;
 }
 
 .style-switcher-item:focus {

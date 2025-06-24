@@ -74,7 +74,7 @@ jobs:
       id: version-check
       run: |
         PACKAGE_VERSION=$(node -p "require('./package.json').version")
-        NPM_VERSION=$(npm view map-gl-style-changer version 2>/dev/null || echo "0.0.0")
+        NPM_VERSION=$(npm view map-gl-style-switcher version 2>/dev/null || echo "0.0.0")
         echo "package-version=$PACKAGE_VERSION" >> $GITHUB_OUTPUT
         echo "npm-version=$NPM_VERSION" >> $GITHUB_OUTPUT
         if [ "$PACKAGE_VERSION" != "$NPM_VERSION" ]; then

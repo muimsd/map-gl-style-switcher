@@ -1,9 +1,9 @@
 /* Override MapLibre GL and Mapbox GL control styles for style switcher */
 .maplibregl-ctrl.style-switcher,
 .mapboxgl-ctrl.style-switcher {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
   background: #fff;
-  border-radius: 8px;
+  border-radius: 6px;
   padding: 4px;
   margin: 8px;
   transition: box-shadow 0.2s;
@@ -60,7 +60,7 @@
   gap: 6px;
   cursor: pointer;
   padding: 2px 4px;
-  border-radius: 6px;
+  border-radius: 4px;
   transition: all 0.2s ease;
   border: 2px solid transparent;
   position: relative;
@@ -111,7 +111,7 @@
   width: 32px;
   height: 32px;
   object-fit: cover;
-  border-radius: 4px;
+  border-radius: 2px;
   background: #f0f0f0;
   border: 1px solid #ddd;
   flex-shrink: 0;

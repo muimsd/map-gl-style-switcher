@@ -77,7 +77,7 @@ export const App = () => {
     // Add style switcher control
     const styleSwitcher = new StyleSwitcherControl({
       styles: styles,
-      theme: 'light',
+      theme: 'auto',
       showLabels: true,
       showImages: true,
       activeStyleId: defaultStyle.id,

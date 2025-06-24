@@ -4,21 +4,23 @@
 [![CI](https://github.com/muimsd/map-gl-style-switcher/actions/workflows/ci.yml/badge.svg)](https://github.com/muimsd/map-gl-style-switcher/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Netlify Status](https://api.netlify.com/api/v1/badges/ea3ee6af-161d-46be-9006-9d31ad52da3c/deploy-status)](https://app.netlify.com/projects/map-gl-style-switcher/deploys)
+
 <!-- [![Coverage Status](https://codecov.io/gh/muimsd/map-gl-style-switcher/branch/main/graph/badge.svg)](https://codecov.io/gh/muimsd/map-gl-style-switcher) -->
 
-A TypeScript control for switching Mapbox GL / MapLibre GL map styles. Easily add a floating style switcher to your map app, with support for multiple styles, images, dark/light themes, and before/after change callbacks. 
+A TypeScript control for switching Mapbox GL / MapLibre GL map styles. Easily add a floating style switcher to your map app, with support for multiple styles, images, dark/light themes, and before/after change callbacks.
 
 **Available as:**
+
 - `StyleSwitcherControl` - Direct IControl implementation for Mapbox/MapLibre GL
 - `MapGLStyleSwitcher` - React component for react-map-gl integration
 
-**[🌐 Live Demo](https://map-gl-style-switcher.netlify.app/)**
+**<a href="https://map-gl-style-switcher.netlify.app/" target="_blank">🌐 Live Demo</a>**
 
 ## Demo
 
 ![Demo GIF](./images/demo.gif)
 
-*Live demo of the style switcher control in action*
+_Live demo of the style switcher control in action_
 
 ## Features
 
@@ -85,14 +87,16 @@ const styles = [
     id: 'arcgis-hybrid',
     name: 'ArcGIS Hybrid',
     image: './arcgis-hybrid.png',
-    styleUrl: 'https://raw.githubusercontent.com/go2garret/maps/main/src/assets/json/arcgis_hybrid.json',
+    styleUrl:
+      'https://raw.githubusercontent.com/go2garret/maps/main/src/assets/json/arcgis_hybrid.json',
     description: 'Hybrid Satellite style from ESRI',
   },
   {
     id: 'osm',
     name: 'OSM',
     image: './osm.png',
-    styleUrl: 'https://raw.githubusercontent.com/go2garret/maps/main/src/assets/json/openStreetMap.json',
+    styleUrl:
+      'https://raw.githubusercontent.com/go2garret/maps/main/src/assets/json/openStreetMap.json',
     description: 'OSM style',
   },
 ];
@@ -125,11 +129,7 @@ map.addControl(styleSwitcher, 'bottom-left');
 
 ### React Integration with react-map-gl
 
-For React applications using `react-map-gl`, you have two options:
-
-#### Using the Built-in MapGLStyleSwitcher Component (Recommended)
-
-This package provides a ready-to-use `MapGLStyleSwitcher` component:
+For React applications using `react-map-gl`, This package provides a ready-to-use `MapGLStyleSwitcher` component:
 
 ```tsx
 import React, { useState } from 'react';
@@ -163,14 +163,16 @@ const styles = [
     id: 'arcgis-hybrid',
     name: 'ArcGIS Hybrid',
     image: './arcgis-hybrid.png',
-    styleUrl: 'https://raw.githubusercontent.com/go2garret/maps/main/src/assets/json/arcgis_hybrid.json',
+    styleUrl:
+      'https://raw.githubusercontent.com/go2garret/maps/main/src/assets/json/arcgis_hybrid.json',
     description: 'Hybrid Satellite style from ESRI',
   },
   {
     id: 'osm',
     name: 'OSM',
     image: './osm.png',
-    styleUrl: 'https://raw.githubusercontent.com/go2garret/maps/main/src/assets/json/openStreetMap.json',
+    styleUrl:
+      'https://raw.githubusercontent.com/go2garret/maps/main/src/assets/json/openStreetMap.json',
     description: 'OSM style',
   },
 ];
@@ -184,7 +186,7 @@ export const MapComponent = () => {
       initialViewState={{
         longitude: 0,
         latitude: 0,
-        zoom: 2
+        zoom: 2,
       }}
       style={{ width: '100%', height: '100vh' }}
       mapStyle={mapStyle}
@@ -213,17 +215,21 @@ npm install react-map-gl maplibre-gl map-gl-style-switcher
 
 ```tsx
 interface MapGLStyleSwitcherProps {
-  styles: StyleItem[];                    // Array of map styles (required)
-  activeStyleId?: string;                 // Currently active style ID
-  theme?: 'light' | 'dark' | 'auto';     // UI theme (default: 'light')
-  showLabels?: boolean;                   // Show style names (default: true)
-  showImages?: boolean;                   // Show style thumbnails (default: true)
-  position?: 'top-left' | 'top-right' |  // Control position (default: 'bottom-left')
-             'bottom-left' | 'bottom-right';
-  animationDuration?: number;             // Animation duration in ms (default: 200)
-  maxHeight?: number;                     // Max height of expanded list (default: 300)
-  rtl?: boolean;                          // Enable RTL layout (default: false)
-  classNames?: Partial<{                  // Custom CSS classes
+  styles: StyleItem[]; // Array of map styles (required)
+  activeStyleId?: string; // Currently active style ID
+  theme?: 'light' | 'dark' | 'auto'; // UI theme (default: 'light')
+  showLabels?: boolean; // Show style names (default: true)
+  showImages?: boolean; // Show style thumbnails (default: true)
+  position?:
+    | 'top-left'
+    | 'top-right' // Control position (default: 'bottom-left')
+    | 'bottom-left'
+    | 'bottom-right';
+  animationDuration?: number; // Animation duration in ms (default: 200)
+  maxHeight?: number; // Max height of expanded list (default: 300)
+  rtl?: boolean; // Enable RTL layout (default: false)
+  classNames?: Partial<{
+    // Custom CSS classes
     container: string;
     list: string;
     item: string;
@@ -232,9 +238,9 @@ interface MapGLStyleSwitcherProps {
     dark: string;
     light: string;
   }>;
-  onBeforeStyleChange?: (from: StyleItem, to: StyleItem) => void;  // Callback before style change
-  onAfterStyleChange?: (from: StyleItem, to: StyleItem) => void;   // Callback after style change
-  onStyleChange?: (styleUrl: string) => void;                     // Simplified callback for style URL
+  onBeforeStyleChange?: (from: StyleItem, to: StyleItem) => void; // Callback before style change
+  onAfterStyleChange?: (from: StyleItem, to: StyleItem) => void; // Callback after style change
+  onStyleChange?: (styleUrl: string) => void; // Simplified callback for style URL
 }
 ```
 
@@ -291,8 +297,9 @@ npm run dev
 ```
 
 This example demonstrates:
+
 - React 19 with TypeScript and Vite 7
-- MapLibre GL integration with react-map-gl 
+- MapLibre GL integration with react-map-gl
 - MapGLStyleSwitcher component usage
 - Multiple basemap styles with thumbnails
 - Responsive design with auto theme detection
@@ -310,10 +317,12 @@ npm run dev
 ```
 
 This example shows:
+
 - Pure TypeScript/JavaScript implementation
 - MapLibre GL integration
 - StyleSwitcherControl direct usage
 - Multiple themes and configuration options
+
 ## Available Styles
 
 ![Available Styles](./images/styles.png)
@@ -321,15 +330,18 @@ This example shows:
 The style switcher supports various map styles. Here are some popular options you can use:
 
 ### Carto Basemaps
+
 - **Voyager** - A balanced, colorful style perfect for data visualization and general mapping applications
 - **Positron** - A clean, minimal light basemap ideal for overlaying data with maximum contrast
 - **Dark Matter** - A dark theme basemap excellent for creating striking data visualizations and night mode interfaces
 
 ### Satellite & Hybrid
+
 - **ArcGIS Hybrid** - Combines satellite imagery with street labels, perfect for geographic context and navigation
 - **Satellite** - High-resolution satellite imagery for detailed geographic analysis
 
 ### OpenStreetMap
+
 - **OSM (OpenStreetMap)** - Community-driven open-source mapping with detailed street-level information
 
 ### Example Styles Configuration
@@ -345,7 +357,7 @@ const styles = [
   },
   {
     id: 'positron',
-    name: 'Positron', 
+    name: 'Positron',
     image: './positron.png',
     styleUrl: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
     description: 'Positron style from Carto',
@@ -361,14 +373,16 @@ const styles = [
     id: 'arcgis-hybrid',
     name: 'ArcGIS Hybrid',
     image: './arcgis-hybrid.png',
-    styleUrl: 'https://raw.githubusercontent.com/go2garret/maps/main/src/assets/json/arcgis_hybrid.json',
+    styleUrl:
+      'https://raw.githubusercontent.com/go2garret/maps/main/src/assets/json/arcgis_hybrid.json',
     description: 'Hybrid Satellite style from ESRI',
   },
   {
     id: 'osm',
     name: 'OSM',
     image: './osm.png',
-    styleUrl: 'https://raw.githubusercontent.com/go2garret/maps/main/src/assets/json/openStreetMap.json',
+    styleUrl:
+      'https://raw.githubusercontent.com/go2garret/maps/main/src/assets/json/openStreetMap.json',
     description: 'OSM style',
   },
 ];
@@ -412,7 +426,7 @@ interface StyleSwitcherClassNames {
 }
 ```
 
-*Example of different map styles that can be used with the style switcher*
+_Example of different map styles that can be used with the style switcher_
 
 ### Option Details
 
@@ -569,7 +583,6 @@ We welcome contributions! Please feel free to submit a Pull Request. For major c
    ```
 
 4. **Make your changes**
-
    - Follow TypeScript best practices
    - Maintain backward compatibility when possible
    - Add tests for new features

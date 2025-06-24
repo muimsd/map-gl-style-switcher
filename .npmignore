@@ -33,3 +33,7 @@ Thumbs.db
 # Git
 .git/
 .gitignore
+
+
+# Examples
+examples/*

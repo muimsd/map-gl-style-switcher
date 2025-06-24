@@ -205,6 +205,27 @@ export const MapComponent = () => {
 ```sh
 npm install react-map-gl maplibre-gl map-gl-style-switcher
 ```
+
+## Examples
+
+### React + Vite + TypeScript Example
+
+A complete working example is available in the `examples/react-map-gl` directory:
+
+```bash
+cd examples/react-map-gl
+./setup.sh
+npm run dev
+```
+
+This example demonstrates:
+- React 18 with TypeScript and Vite
+- MapLibre GL integration with react-map-gl 
+- Multiple basemap styles
+- Responsive design
+- Style switcher control with auto theme detection
+
+[View the complete example →](examples/react-map-gl/)
 ## Available Styles
 
 ![Available Styles](./images/styles.png)

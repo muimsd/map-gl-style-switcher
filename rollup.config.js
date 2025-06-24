@@ -40,7 +40,7 @@ const copyCSS = () => ({
 // Main build configuration (JavaScript/TypeScript only)
 const mainConfig = {
   input: 'src/index.ts',
-  external: ['mapbox-gl', 'maplibre-gl'],
+  external: ['mapbox-gl', 'maplibre-gl', 'react', 'react-dom', 'react-map-gl', 'react-map-gl/maplibre'],
   output: [
     {
       file: pkg.main,
@@ -56,7 +56,11 @@ const mainConfig = {
       exports: 'named',
       globals: {
         'mapbox-gl': 'mapboxgl',
-        'maplibre-gl': 'maplibregl'
+        'maplibre-gl': 'maplibregl',
+        'react': 'React',
+        'react-dom': 'ReactDOM',
+        'react-map-gl': 'ReactMapGL',
+        'react-map-gl/maplibre': 'ReactMapGL'
       }
     }
   ],
@@ -93,7 +97,7 @@ const dtsConfig = {
       tsconfig: './tsconfig.build.json'
     })
   ],
-  external: ['mapbox-gl', 'maplibre-gl']
+  external: ['mapbox-gl', 'maplibre-gl', 'react', 'react-dom', 'react-map-gl', 'react-map-gl/maplibre']
 };
 
 export default [mainConfig, dtsConfig];

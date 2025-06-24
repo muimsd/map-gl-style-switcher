@@ -1,8 +1,15 @@
 {
-  "extends": "./tsconfig.json",
+  "extends": "./tsconfig.app.json",
   "compilerOptions": {
     "outDir": "dist",
-    "rootDir": "src"
+    "rootDir": "src",
+    "noEmit": false,
+    "declaration": true,
+    "jsx": "react-jsx",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "allowImportingTsExtensions": false,
+    "verbatimModuleSyntax": false
   },
   "include": [
     "src/**/*"

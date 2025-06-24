@@ -387,17 +387,28 @@ describe('StyleSwitcherControl', () => {
     });
 
     it('should handle invalid activeStyleId gracefully', () => {
+      // Mock console.warn to suppress expected warning
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+      
       const control = new StyleSwitcherControl({
         styles: mockStyles,
         activeStyleId: 'non-existent-style',
       });
 
       expect(control).toBeInstanceOf(StyleSwitcherControl);
+      
+      // Verify that warning was called
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'StyleSwitcherControl: activeStyleId "non-existent-style" does not match any style. Using first style instead.'
+      );
 
       // Should fall back to first style
       const container = control.onAdd(mockMap);
       const activeItem = container.querySelector('[aria-selected="true"]');
       expect(activeItem).toBeTruthy();
+      
+      // Restore console.warn
+      consoleSpy.mockRestore();
 
       control.onRemove();
     });

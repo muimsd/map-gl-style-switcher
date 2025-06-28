@@ -51,6 +51,130 @@ yarn add map-gl-style-switcher
 pnpm add map-gl-style-switcher
 ```
 
+## CDN Usage
+
+For quick prototyping or when you don't want to use a build system, you can include the package directly from a CDN:
+
+### unpkg CDN
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <!-- MapLibre GL CSS -->
+  <link href="https://unpkg.com/maplibre-gl@4/dist/maplibre-gl.css" rel="stylesheet" />
+  
+  <!-- Style Switcher CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/map-gl-style-switcher@latest/dist/map-gl-style-switcher.css">
+</head>
+<body>
+  <div id="map" style="width: 100%; height: 100vh;"></div>
+
+  <!-- MapLibre GL JS -->
+  <script src="https://unpkg.com/maplibre-gl@4/dist/maplibre-gl.js"></script>
+  
+  <!-- Style Switcher UMD -->
+  <script src="https://unpkg.com/map-gl-style-switcher@latest/dist/index.umd.js"></script>
+  
+  <script>
+    // StyleSwitcherControl is available globally as MapGLStyleSwitcher.StyleSwitcherControl
+    const { StyleSwitcherControl } = MapGLStyleSwitcher;
+    
+    const styles = [
+      {
+        id: 'voyager',
+        name: 'Voyager',
+        image: 'https://unpkg.com/map-gl-style-switcher@latest/public/voyager.png',
+        styleUrl: 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
+        description: 'Voyager style from Carto',
+      },
+      {
+        id: 'positron',
+        name: 'Positron',
+        image: 'https://unpkg.com/map-gl-style-switcher@latest/public/positron.png',
+        styleUrl: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+        description: 'Positron style from Carto',
+      }
+    ];
+    
+    const map = new maplibregl.Map({
+      container: 'map',
+      style: styles[0].styleUrl,
+      center: [0, 0],
+      zoom: 2
+    });
+    
+    const styleSwitcher = new StyleSwitcherControl({
+      styles: styles,
+      theme: 'auto',
+      activeStyleId: styles[0].id,
+      onAfterStyleChange: (from, to) => {
+        map.setStyle(to.styleUrl);
+      }
+    });
+    
+    map.addControl(styleSwitcher, 'bottom-left');
+  </script>
+</body>
+</html>
+```
+
+### jsDelivr CDN
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <!-- MapLibre GL CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/maplibre-gl@4/dist/maplibre-gl.css" rel="stylesheet" />
+  
+  <!-- Style Switcher CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/map-gl-style-switcher@latest/dist/map-gl-style-switcher.css">
+</head>
+<body>
+  <div id="map" style="width: 100%; height: 100vh;"></div>
+
+  <!-- MapLibre GL JS -->
+  <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@4/dist/maplibre-gl.js"></script>
+  
+  <!-- Style Switcher UMD -->
+  <script src="https://cdn.jsdelivr.net/npm/map-gl-style-switcher@latest/dist/index.umd.js"></script>
+  
+  <script>
+    // Same JavaScript code as above
+    const { StyleSwitcherControl } = MapGLStyleSwitcher;
+    // ... rest of the code
+  </script>
+</body>
+</html>
+```
+
+### ES Modules from CDN
+
+For modern browsers that support ES modules:
+
+```html
+<script type="module">
+  import { StyleSwitcherControl } from 'https://unpkg.com/map-gl-style-switcher@latest/dist/index.js';
+  
+  // Your code here
+  const styleSwitcher = new StyleSwitcherControl({
+    styles: styles,
+    theme: 'auto'
+  });
+</script>
+```
+
+### Specific Version
+
+To use a specific version instead of `@latest`:
+
+```html
+<!-- Replace @latest with specific version, e.g., @0.7.2 -->
+<link rel="stylesheet" href="https://unpkg.com/map-gl-style-switcher@0.7.2/dist/map-gl-style-switcher.css">
+<script src="https://unpkg.com/map-gl-style-switcher@0.7.2/dist/index.umd.js"></script>
+```
+
 ## Usage
 
 ### Basic MapLibre GL Integration

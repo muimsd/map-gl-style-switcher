@@ -8,7 +8,7 @@ import { dirname, join } from 'path';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const pkg = JSON.parse(readFileSync(join(__dirname, 'package.json'), 'utf8'));
 
-// Custom plugin to copy and minify CSS
+// Custom plugin to copy CSS without minification
 const copyCSS = () => ({
   name: 'copy-css',
   buildStart() {
@@ -16,24 +16,10 @@ const copyCSS = () => ({
     if (!existsSync('dist')) {
       mkdirSync('dist', { recursive: true });
     }
-    
-    // Read and copy CSS file
+    // Read and copy CSS file as-is
     const cssContent = readFileSync('src/styles/style-switcher.css', 'utf8');
-    
-    // Basic CSS minification (remove comments and extra whitespace)
-    const minifiedCSS = cssContent
-      .replace(/\/\*[\s\S]*?\*\//g, '') // Remove comments
-      .replace(/\s+/g, ' ') // Replace multiple whitespace with single space
-      .replace(/\s*{\s*/g, '{') // Remove spaces around {
-      .replace(/\s*}\s*/g, '}') // Remove spaces around }
-      .replace(/\s*;\s*/g, ';') // Remove spaces around ;
-      .replace(/\s*,\s*/g, ',') // Remove spaces around ,
-      .replace(/\s*:\s*/g, ':') // Remove spaces around :
-      .trim();
-    
-    // Write to dist folder
-    writeFileSync('dist/map-gl-style-switcher.css', minifiedCSS);
-    console.log('✓ CSS file copied and minified to dist/map-gl-style-switcher.css');
+    writeFileSync('dist/map-gl-style-switcher.css', cssContent);
+    console.log('✓ CSS file copied to dist/map-gl-style-switcher.css');
   }
 });
 

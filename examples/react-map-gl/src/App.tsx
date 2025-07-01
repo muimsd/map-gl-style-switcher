@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import {Map} from 'react-map-gl/maplibre';
+import { Map } from 'react-map-gl/maplibre';
 import { MapGLStyleSwitcher, type StyleItem } from 'map-gl-style-switcher';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import 'map-gl-style-switcher/dist/map-gl-style-switcher.css';
-
 
 const mapStyles: StyleItem[] = [
   {
@@ -27,7 +26,8 @@ const mapStyles: StyleItem[] = [
     name: 'Dark Matter',
     image:
       'https://raw.githubusercontent.com/muimsd/map-gl-style-switcher/refs/heads/main/public/dark.png',
-    styleUrl: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+    styleUrl:
+      'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
     description: 'Dark style from Carto',
   },
   {
@@ -47,7 +47,7 @@ const mapStyles: StyleItem[] = [
     styleUrl:
       'https://raw.githubusercontent.com/go2garret/maps/main/src/assets/json/openStreetMap.json',
     description: 'OSM style',
-  }
+  },
 ];
 
 export default function App() {
@@ -64,22 +64,35 @@ export default function App() {
   };
 
   return (
-    <div style={{ 
-      width: '100vw', 
-      height: '100vh', 
-      display: 'flex', 
-      alignItems: 'center', 
-      justifyContent: 'center',
-      backgroundColor: '#f0f0f0',
-      fontFamily: 'Arial, sans-serif'
-    }}>
+    <div
+      style={{
+        padding: '40px',
+        backgroundColor: '#b1b1b1',
+        minHeight: '100vh',
+        boxSizing: 'border-box',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      <h1
+        style={{
+          textAlign: 'center',
+          marginBottom: '30px',
+          color: '#333',
+          fontSize: '2rem',
+          fontWeight: '600',
+          margin: '0 0 30px 0',
+        }}
+      >
+        Map Style Switcher Demo
+      </h1>
       <Map
         initialViewState={{
           longitude: -91.874,
           latitude: 42.76,
-          zoom: 12
+          zoom: 12,
         }}
-        style={{ width: '800px', height: '600px' }}
+        style={{ width: '100%', height: '600px', borderRadius: '8px' }}
         mapStyle={mapStyle}
         onLoad={() => {
           console.log('Map loaded successfully');

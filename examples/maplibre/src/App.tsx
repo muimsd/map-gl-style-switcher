@@ -1,9 +1,13 @@
-import React, { useState } from 'react';
-import { Map } from 'react-map-gl/maplibre';
-import { MapGLStyleSwitcher, type StyleItem } from 'map-gl-style-switcher';
+import React, { useEffect, useRef, useState } from 'react';
+import * as maplibregl from 'maplibre-gl';
+import { StyleSwitcherControl, type StyleItem } from 'map-gl-style-switcher';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import 'map-gl-style-switcher/dist/map-gl-style-switcher.css';
-
+// Register RTL text plugin for proper Arabic script rendering
+maplibregl.setRTLTextPlugin(
+  'https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.3.0/dist/mapbox-gl-rtl-text.js',
+  false
+);
 const mapStyles: StyleItem[] = [
   {
     id: 'voyager',
@@ -51,23 +55,57 @@ const mapStyles: StyleItem[] = [
 ];
 
 export default function App() {
-  const [mapStyle, setMapStyle] = useState(mapStyles[0].styleUrl);
-  const [activeStyleId, setActiveStyleId] = useState(mapStyles[0].id);
-
-  const handleStyleChange = (styleUrl: string) => {
-    setMapStyle(styleUrl);
-    const style = mapStyles.find(s => s.styleUrl === styleUrl);
-    if (style) {
-      setActiveStyleId(style.id);
-      console.log(`Style changed to: ${style.name}`);
+  const mapContainer = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (!mapContainer.current) {
+      console.error('Map container not found!');
+      return;
     }
-  };
+    const currentStyle = mapStyles[0];
+    const map = new maplibregl.Map({
+      container: mapContainer.current,
+      // Use a simple, reliable style first
+      style: currentStyle.styleUrl,
+      // Center on Dubai, UAE
+      center: [55.2708, 25.2048],
+      zoom: 10,
+      attributionControl: false,
+    });
+    // Add navigation control (zoom/rotation)
+    map.addControl(new maplibregl.NavigationControl(), 'top-right');
+    // Add compact attribution control
+    map.addControl(
+      new maplibregl.AttributionControl({ compact: true }),
+      'bottom-right'
+    );
+
+    // Add style switcher control
+    const styleSwitcher = new StyleSwitcherControl({
+      styles: mapStyles,
+      theme: 'auto',
+      showLabels: true,
+      showImages: true,
+      activeStyleId: currentStyle.id,
+      onBeforeStyleChange: (from, to) => {
+        console.log('Changing style from', from.name, 'to', to.name);
+      },
+      onAfterStyleChange: (_from, to) => {
+        map.setStyle(to.styleUrl);
+        console.log('Style changed to', to.name);
+      },
+    });
+    map.addControl(styleSwitcher, 'bottom-left');
+
+    return () => {
+      map.remove();
+    };
+  }, []); // Empty dependency array
 
   return (
     <div
       style={{
         padding: '40px',
-        backgroundColor: '#b1b1b1',
+        backgroundColor: '#f5f5f5',
         minHeight: '100vh',
         boxSizing: 'border-box',
         display: 'flex',
@@ -86,34 +124,19 @@ export default function App() {
       >
         Map Style Switcher Demo
       </h1>
-      <Map
-        initialViewState={{
-          longitude: -91.874,
-          latitude: 42.76,
-          zoom: 12,
+      <div
+        ref={mapContainer}
+        style={{
+          width: '100%',
+          height: '100%',
+          flex: 1,
+          border: '1px solid #ddd',
+          borderRadius: '12px',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+          overflow: 'hidden',
+          minHeight: '500px',
         }}
-        style={{ width: '100%', height: '600px', borderRadius: '8px' }}
-        mapStyle={mapStyle}
-        onLoad={() => {
-          console.log('Map loaded successfully');
-        }}
-        onError={evt => {
-          console.error('Map error:', evt.error);
-        }}
-      >
-        <MapGLStyleSwitcher
-          styles={mapStyles}
-          activeStyleId={activeStyleId}
-          theme="auto"
-          showLabels={true}
-          showImages={true}
-          position="bottom-left"
-          onBeforeStyleChange={(from: StyleItem, to: StyleItem) => {
-            console.log(`Switching from ${from.name} to ${to.name}`);
-          }}
-          onStyleChange={handleStyleChange}
-        />
-      </Map>
+      />
     </div>
   );
 }

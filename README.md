@@ -13,15 +13,17 @@ A TypeScript control for switching Mapbox GL / MapLibre GL map styles. Easily ad
 
 - `StyleSwitcherControl` - Direct IControl implementation for Mapbox/MapLibre GL
 - `MapGLStyleSwitcher` - React component for react-map-gl integration
+_Live demo of the style switcher control in action_
 
 **<a href="https://map-gl-style-switcher.netlify.app/" target="_blank">🌐 Live Demo</a>**
 
-## Demo
+## GIF Demo
 
 ![Demo GIF](./images/demo.gif)
 
-_Live demo of the style switcher control in action_
+## Available Styles
 
+![Available Styles](./images/styles.png)
 ## Features
 
 - IControl implementation for Mapbox GL / MapLibre GL
@@ -447,9 +449,6 @@ This example shows:
 - StyleSwitcherControl direct usage
 - Multiple themes and configuration options
 
-## Available Styles
-
-![Available Styles](./images/styles.png)
 
 The style switcher supports various map styles. Here are some popular options you can use:
 

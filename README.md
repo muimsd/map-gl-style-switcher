@@ -17,7 +17,7 @@ _Live demo of the style switcher control in action_
 
 **<a href="https://map-gl-style-switcher.netlify.app/" target="_blank">🌐 Live Demo</a>**
 
-## GIF Demo
+## Animated Demo
 
 ![Demo GIF](./images/demo.gif)
 

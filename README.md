@@ -59,38 +59,44 @@ pnpm add map-gl-style-switcher
 For React applications where you manage the map instance yourself (e.g., with `useEffect`), use the `useStyleSwitcher` hook:
 
 ```tsx
-import maplibregl from 'maplibre-gl';
-import { StyleSwitcherControl, type StyleItem  } from 'map-gl-style-switcher';
-import { useStyleSwitcher } from 'map-gl-style-switcher/react';
+import React, { useEffect, useRef } from 'react';
+import * as maplibregl from 'maplibre-gl';
+import { StyleSwitcherControl, type StyleItem } from 'map-gl-style-switcher';
+// Custom hook
+// import { useStyleSwitcher } from 'map-gl-style-switcher/react';
+import 'maplibre-gl/dist/maplibre-gl.css';
 import 'map-gl-style-switcher/dist/map-gl-style-switcher.css';
 
-// Define styles
-const styles: StyleItem[] = [
+const mapStyles: StyleItem[] = [
   {
     id: 'voyager',
     name: 'Voyager',
-    image: 'https://github.com/muimsd/map-gl-style-switcher/tree/main/public/voyager.png',
+    image:
+      'https://raw.githubusercontent.com/muimsd/map-gl-style-switcher/refs/heads/main/public/voyager.png',
     styleUrl: 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
     description: 'Voyager style from Carto',
   },
   {
     id: 'positron',
     name: 'Positron',
-    image: 'https://github.com/muimsd/map-gl-style-switcher/tree/main/public/positron.png',
+    image:
+      'https://raw.githubusercontent.com/muimsd/map-gl-style-switcher/refs/heads/main/public/positron.png',
     styleUrl: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
     description: 'Positron style from Carto',
   },
   {
     id: 'dark-matter',
     name: 'Dark Matter',
-    image: 'https://github.com/muimsd/map-gl-style-switcher/tree/main/public/dark.png',
+    image:
+      'https://raw.githubusercontent.com/muimsd/map-gl-style-switcher/refs/heads/main/public/dark.png',
     styleUrl: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
     description: 'Dark style from Carto',
   },
   {
     id: 'arcgis-hybrid',
     name: 'ArcGIS Hybrid',
-    image: 'https://github.com/muimsd/map-gl-style-switcher/tree/main/public/arcgis-hybrid.png',
+    image:
+      'https://raw.githubusercontent.com/muimsd/map-gl-style-switcher/refs/heads/main/public/arcgis-hybrid.png',
     styleUrl:
       'https://raw.githubusercontent.com/go2garret/maps/main/src/assets/json/arcgis_hybrid.json',
     description: 'Hybrid Satellite style from ESRI',
@@ -98,12 +104,17 @@ const styles: StyleItem[] = [
   {
     id: 'osm',
     name: 'OSM',
-    image: 'https://github.com/muimsd/map-gl-style-switcher/tree/main/public/osm.png',
+    image:
+      'https://raw.githubusercontent.com/muimsd/map-gl-style-switcher/refs/heads/main/public/osm.png',
     styleUrl:
       'https://raw.githubusercontent.com/go2garret/maps/main/src/assets/json/openStreetMap.json',
     description: 'OSM style',
   },
 ];
+
+export default function App() {
+  const mapContainer = useRef<HTMLDivElement | null>(null)
+
   useEffect(() => {
     if (!mapContainer.current) {
       console.error('Map container not found!');
@@ -117,15 +128,7 @@ const styles: StyleItem[] = [
       // Center on Dubai, UAE
       center: [55.2708, 25.2048],
       zoom: 10,
-      attributionControl: false,
     });
-    // Add navigation control (zoom/rotation)
-    map.addControl(new maplibregl.NavigationControl(), 'top-right');
-    // Add compact attribution control
-    map.addControl(
-      new maplibregl.AttributionControl({ compact: true }),
-      'bottom-right'
-    );
 
     // Add style switcher control
     const styleSwitcher = new StyleSwitcherControl({
@@ -148,7 +151,7 @@ const styles: StyleItem[] = [
       map.remove();
     };
   }, []); // Empty dependency array
-  
+
   // Add style switcher control to the map
   // useStyleSwitcher(map.current, {
   //   styles,
@@ -160,7 +163,17 @@ const styles: StyleItem[] = [
   //     }
   //   },
   // });
-  return <div ref={mapContainer} style={{ width: '100%', height: '400px' }} />;
+
+  return (
+    <div
+      ref={mapContainer}
+      style={{
+        width: '100%',
+        height: '500px',
+      }}
+    />
+  );
+}
 
 ```
 

@@ -20,7 +20,9 @@ import { useControl } from 'react-map-gl/maplibre';
 import { StyleSwitcherControl } from '../components/StyleSwitcherControl';
 
 const mockUseControl = useControl as jest.MockedFunction<typeof useControl>;
-const mockStyleSwitcherControl = StyleSwitcherControl as jest.MockedClass<typeof StyleSwitcherControl>;
+const mockStyleSwitcherControl = StyleSwitcherControl as jest.MockedClass<
+  typeof StyleSwitcherControl
+>;
 
 describe('MapGLStyleSwitcher', () => {
   const mockStyles: StyleItem[] = [
@@ -302,27 +304,27 @@ describe('MapGLStyleSwitcher', () => {
 
     // Get the factory function that was passed to useControl
     const factoryFunction = mockUseControl.mock.calls[0][0];
-    
+
     // Create a mock context for the factory function
     const mockContext = { map: {}, viewport: {}, mapLib: {} } as unknown as any;
-    
+
     // Call the factory function to create the control
     factoryFunction(mockContext);
-    
+
     // Verify StyleSwitcherControl was created
     expect(mockStyleSwitcherControl).toHaveBeenCalledTimes(1);
-    
+
     // Get the options that were passed to StyleSwitcherControl
     const controlOptions = mockStyleSwitcherControl.mock.calls[0][0];
-    
+
     // Test the onAfterStyleChange callback integration
     expect(controlOptions.onAfterStyleChange).toBeDefined();
-    
+
     // Simulate calling the onAfterStyleChange callback
     const fromStyle = mockStyles[0];
     const toStyle = mockStyles[1];
     controlOptions.onAfterStyleChange?.(fromStyle, toStyle);
-    
+
     // Verify both callbacks were called correctly
     expect(mockOnAfterStyleChange).toHaveBeenCalledWith(fromStyle, toStyle);
     expect(mockOnStyleChange).toHaveBeenCalledWith(toStyle.styleUrl);
@@ -343,15 +345,15 @@ describe('MapGLStyleSwitcher', () => {
     const mockContext = { map: {}, viewport: {}, mapLib: {} };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     factoryFunction(mockContext as any);
-    
+
     // Get the options that were passed to StyleSwitcherControl
     const controlOptions = mockStyleSwitcherControl.mock.calls[0][0];
-    
+
     // Simulate calling the onAfterStyleChange callback
     const fromStyle = mockStyles[0];
     const toStyle = mockStyles[1];
     controlOptions.onAfterStyleChange?.(fromStyle, toStyle);
-    
+
     // Verify only onStyleChange was called
     expect(mockOnStyleChange).toHaveBeenCalledWith(toStyle.styleUrl);
   });
@@ -371,37 +373,35 @@ describe('MapGLStyleSwitcher', () => {
     const mockContext = { map: {}, viewport: {}, mapLib: {} };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     factoryFunction(mockContext as any);
-    
+
     // Get the options that were passed to StyleSwitcherControl
     const controlOptions = mockStyleSwitcherControl.mock.calls[0][0];
-    
+
     // Simulate calling the onAfterStyleChange callback
     const fromStyle = mockStyles[0];
     const toStyle = mockStyles[1];
     controlOptions.onAfterStyleChange?.(fromStyle, toStyle);
-    
+
     // Verify only onAfterStyleChange was called
     expect(mockOnAfterStyleChange).toHaveBeenCalledWith(fromStyle, toStyle);
   });
 
   test('should handle no callbacks provided', () => {
-    render(
-      <MapGLStyleSwitcher styles={mockStyles} />
-    );
+    render(<MapGLStyleSwitcher styles={mockStyles} />);
 
     // Get the factory function and create the control
     const factoryFunction = mockUseControl.mock.calls[0][0];
     const mockContext = { map: {}, viewport: {}, mapLib: {} };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     factoryFunction(mockContext as any);
-    
+
     // Get the options that were passed to StyleSwitcherControl
     const controlOptions = mockStyleSwitcherControl.mock.calls[0][0];
-    
+
     // Simulate calling the onAfterStyleChange callback
     const fromStyle = mockStyles[0];
     const toStyle = mockStyles[1];
-    
+
     // This should not throw even with no callbacks
     expect(() => {
       controlOptions.onAfterStyleChange?.(fromStyle, toStyle);
@@ -434,12 +434,12 @@ describe('MapGLStyleSwitcher', () => {
     const mockContext = { map: {}, viewport: {}, mapLib: {} };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     factoryFunction(mockContext as any);
-    
+
     // Verify StyleSwitcherControl was called with all the correct props
     expect(mockStyleSwitcherControl).toHaveBeenCalledWith({
       styles: mockStyles,
-      activeStyleId: "voyager",
-      theme: "dark",
+      activeStyleId: 'voyager',
+      theme: 'dark',
       showLabels: false,
       showImages: true,
       animationDuration: 300,

@@ -46,7 +46,7 @@
     "react",
     "react-map-gl"
   ],
-  "author": "Muhammad Imran Siddique <muimsd@gmail.com>",
+  "author": "Muhammad Imran Siddique",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -59,13 +59,21 @@
   "demo": "https://map-gl-style-switcher.netlify.app",
   "peerDependencies": {
     "mapbox-gl": ">=1.0.0",
-    "maplibre-gl": ">=2.0.0"
+    "maplibre-gl": ">=2.0.0",
+    "react": ">=16.8.0",
+    "react-map-gl": ">=7.0.0"
   },
   "peerDependenciesMeta": {
     "mapbox-gl": {
       "optional": true
     },
     "maplibre-gl": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    },
+    "react-map-gl": {
       "optional": true
     }
   },

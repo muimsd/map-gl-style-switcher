@@ -52,10 +52,7 @@ const styles: StyleItem[] = [
 export const App = () => {
   // Theme detection hook
   const [isDarkMode, setIsDarkMode] = useState(() => {
-    return (
-      window.matchMedia &&
-      window.matchMedia('(prefers-color-scheme: dark)').matches
-    );
+    return !!window.matchMedia?.('(prefers-color-scheme: dark)').matches;
   });
 
   useEffect(() => {

@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Map } from 'react-map-gl/maplibre';
-import { MapGLStyleSwitcher, type StyleItem } from 'map-gl-style-switcher';
+import { MapGLStyleSwitcher, type StyleItem } from 'map-gl-style-switcher/react-map-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import 'map-gl-style-switcher/dist/map-gl-style-switcher.css';
 
@@ -53,6 +53,23 @@ const mapStyles: StyleItem[] = [
 export default function App() {
   const [mapStyle, setMapStyle] = useState(mapStyles[0].styleUrl);
   const [activeStyleId, setActiveStyleId] = useState(mapStyles[0].id);
+  // Theme detection hook
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    return (
+      window.matchMedia &&
+      window.matchMedia('(prefers-color-scheme: dark)').matches
+    );
+  });
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleThemeChange = (e: MediaQueryListEvent) => {
+      setIsDarkMode(e.matches);
+    };
+
+    mediaQuery.addEventListener('change', handleThemeChange);
+    return () => mediaQuery.removeEventListener('change', handleThemeChange);
+  }, []);
 
   const handleStyleChange = (styleUrl: string) => {
     setMapStyle(styleUrl);
@@ -67,24 +84,26 @@ export default function App() {
     <div
       style={{
         padding: '40px',
-        backgroundColor: '#b1b1b1',
+        backgroundColor: isDarkMode ? '#1a1a1a' : '#f5f5f5',
         minHeight: '100vh',
         boxSizing: 'border-box',
         display: 'flex',
         flexDirection: 'column',
+        transition: 'background-color 0.3s ease',
       }}
     >
       <h1
         style={{
           textAlign: 'center',
           marginBottom: '30px',
-          color: '#333',
+          color: isDarkMode ? '#ffffff' : '#333',
           fontSize: '2rem',
           fontWeight: '600',
           margin: '0 0 30px 0',
+          transition: 'color 0.3s ease',
         }}
       >
-        Map Style Switcher Demo
+        React Map GL MapLibre Demo
       </h1>
       <Map
         initialViewState={{
@@ -92,7 +111,7 @@ export default function App() {
           latitude: 42.76,
           zoom: 12,
         }}
-        style={{ width: '100%', height: '600px', borderRadius: '8px' }}
+        style={{ width: '100%', height: 'calc(100vh - 200px)', borderRadius: '8px' }}
         mapStyle={mapStyle}
         onLoad={() => {
           console.log('Map loaded successfully');

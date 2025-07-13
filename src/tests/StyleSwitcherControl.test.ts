@@ -130,6 +130,16 @@ describe('StyleSwitcherControl', () => {
       expect(noImagesControl).toBeInstanceOf(StyleSwitcherControl);
     });
 
+    it('should throw error when both showLabels and showImages are false', () => {
+      expect(() => {
+        new StyleSwitcherControl({
+          styles: mockStyles,
+          showLabels: false,
+          showImages: false,
+        });
+      }).toThrow('At least one of showLabels or showImages must be true.');
+    });
+
     it('should handle custom class names', () => {
       const control = new StyleSwitcherControl({
         styles: mockStyles,

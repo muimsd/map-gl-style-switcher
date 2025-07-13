@@ -56,6 +56,25 @@ const mapStyles: StyleItem[] = [
 
 export default function App() {
   const mapContainer = useRef<HTMLDivElement | null>(null);
+  
+  // Theme detection hook
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    return (
+      window.matchMedia &&
+      window.matchMedia('(prefers-color-scheme: dark)').matches
+    );
+  });
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleThemeChange = (e: MediaQueryListEvent) => {
+      setIsDarkMode(e.matches);
+    };
+
+    mediaQuery.addEventListener('change', handleThemeChange);
+    return () => mediaQuery.removeEventListener('change', handleThemeChange);
+  }, []);
+
   useEffect(() => {
     if (!mapContainer.current) {
       console.error('Map container not found!');
@@ -105,24 +124,26 @@ export default function App() {
     <div
       style={{
         padding: '40px',
-        backgroundColor: '#f5f5f5',
+        backgroundColor: isDarkMode ? '#1a1a1a' : '#f5f5f5',
         minHeight: '100vh',
         boxSizing: 'border-box',
         display: 'flex',
         flexDirection: 'column',
+        transition: 'background-color 0.3s ease',
       }}
     >
       <h1
         style={{
           textAlign: 'center',
           marginBottom: '30px',
-          color: '#333',
+          color: isDarkMode ? '#ffffff' : '#333',
           fontSize: '2rem',
           fontWeight: '600',
           margin: '0 0 30px 0',
+          transition: 'color 0.3s ease',
         }}
       >
-        Map Style Switcher Demo
+        Maplibre Demo
       </h1>
       <div
         ref={mapContainer}
@@ -130,11 +151,14 @@ export default function App() {
           width: '100%',
           height: '100%',
           flex: 1,
-          border: '1px solid #ddd',
+          border: isDarkMode ? '1px solid #444' : '1px solid #ddd',
           borderRadius: '12px',
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+          boxShadow: isDarkMode
+            ? '0 4px 12px rgba(0, 0, 0, 0.3)'
+            : '0 4px 12px rgba(0, 0, 0, 0.1)',
           overflow: 'hidden',
           minHeight: '500px',
+          transition: 'border-color 0.3s ease, box-shadow 0.3s ease',
         }}
       />
     </div>

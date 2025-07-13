@@ -18,14 +18,14 @@ describe('useStyleSwitcher', () => {
     {
       id: 'voyager',
       name: 'Voyager',
-      image: 'https://example.com/voyager.png',
+      image: 'https://github.com/muimsd/map-gl-style-switcher/tree/main/public/voyager.png',
       styleUrl: 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
       description: 'Voyager style from Carto',
     },
     {
       id: 'positron',
       name: 'Positron',
-      image: 'https://example.com/positron.png',
+      image: 'https://github.com/muimsd/map-gl-style-switcher/tree/main/public/positron.png',
       styleUrl: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
       description: 'Positron style from Carto',
     },

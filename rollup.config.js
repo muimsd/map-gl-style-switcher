@@ -23,33 +23,21 @@ const copyCSS = () => ({
   }
 });
 
-// Main build configuration (JavaScript/TypeScript only)
-const mainConfig = {
-  input: 'src/index.ts',
+// ES modules build configuration with multiple entry points
+const esConfig = {
+  input: {
+    index: 'src/index.ts',
+    react: 'src/react.ts',
+    'react-map-gl': 'src/react-map-gl.ts'
+  },
   external: ['mapbox-gl', 'maplibre-gl', 'react', 'react-dom', 'react-map-gl', 'react-map-gl/maplibre'],
-  output: [
-    {
-      file: pkg.main,
-      format: 'es',
-      sourcemap: true,
-      exports: 'named'
-    },
-    {
-      file: 'dist/index.umd.js',
-      format: 'umd',
-      name: 'MapGLStyleSwitcher',
-      sourcemap: true,
-      exports: 'named',
-      globals: {
-        'mapbox-gl': 'mapboxgl',
-        'maplibre-gl': 'maplibregl',
-        'react': 'React',
-        'react-dom': 'ReactDOM',
-        'react-map-gl': 'ReactMapGL',
-        'react-map-gl/maplibre': 'ReactMapGL'
-      }
-    }
-  ],
+  output: {
+    dir: 'dist',
+    format: 'es',
+    sourcemap: true,
+    exports: 'named',
+    entryFileNames: '[name].js'
+  },
   plugins: [
     copyCSS(), // Copy CSS first
     resolve({
@@ -71,12 +59,55 @@ const mainConfig = {
   }
 };
 
+// UMD build for main entry only (for CDN usage)
+const umdConfig = {
+  input: 'src/index.ts',
+  external: ['mapbox-gl', 'maplibre-gl', 'react', 'react-dom', 'react-map-gl', 'react-map-gl/maplibre'],
+  output: {
+    file: 'dist/index.umd.js',
+    format: 'umd',
+    name: 'MapGLStyleSwitcher',
+    sourcemap: true,
+    exports: 'named',
+    globals: {
+      'mapbox-gl': 'mapboxgl',
+      'maplibre-gl': 'maplibregl',
+      'react': 'React',
+      'react-dom': 'ReactDOM',
+      'react-map-gl': 'ReactMapGL',
+      'react-map-gl/maplibre': 'ReactMapGL'
+    }
+  },
+  plugins: [
+    resolve({
+      browser: true,
+      preferBuiltins: false
+    }),
+    typescript({
+      tsconfig: './tsconfig.build.json',
+      declaration: false,
+      outDir: 'dist',
+      rootDir: 'src'
+    })
+  ],
+  onwarn(warning, warn) {
+    if (warning.code === 'THIS_IS_UNDEFINED') return;
+    if (warning.code === 'EMPTY_BUNDLE') return;
+    warn(warning);
+  }
+};
+
 // Type definitions build
 const dtsConfig = {
-  input: 'src/index.ts',
+  input: {
+    index: 'src/index.ts',
+    react: 'src/react.ts',
+    'react-map-gl': 'src/react-map-gl.ts'
+  },
   output: {
-    file: pkg.types,
-    format: 'es'
+    dir: 'dist',
+    format: 'es',
+    entryFileNames: '[name].d.ts'
   },
   plugins: [
     dts({
@@ -86,4 +117,4 @@ const dtsConfig = {
   external: ['mapbox-gl', 'maplibre-gl', 'react', 'react-dom', 'react-map-gl', 'react-map-gl/maplibre']
 };
 
-export default [mainConfig, dtsConfig];
+export default [esConfig, umdConfig, dtsConfig];

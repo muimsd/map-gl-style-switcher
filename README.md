@@ -179,6 +179,36 @@ To use a specific version instead of `@latest`:
 
 ## Usage
 
+The package provides three clear entry points for different use cases:
+
+| Entry Point | Use Case | Dependencies | Exports |
+|------------|----------|--------------|---------|
+| `map-gl-style-switcher` | Vanilla JS/TS (default) | maplibre-gl OR mapbox-gl | `StyleSwitcherControl` |
+| `map-gl-style-switcher/react` | React with custom map | react + (maplibre-gl OR mapbox-gl) | `useStyleSwitcher`, `StyleSwitcherControl` |
+| `map-gl-style-switcher/react-map-gl` | React with react-map-gl | react + react-map-gl | `MapGLStyleSwitcher`, `StyleSwitcherControl` |
+
+### Entry Point Guide
+
+#### For Vanilla JavaScript/TypeScript Users
+```ts
+import { StyleSwitcherControl } from 'map-gl-style-switcher';
+// No React dependencies required
+```
+
+#### For React with Custom Map Instance
+```tsx
+import { useStyleSwitcher } from 'map-gl-style-switcher/react';
+// Pure React hook - works with any map instance (MapLibre, Mapbox, etc.)
+// Only requires: react (no react-map-gl dependency)
+```
+
+#### For React with react-map-gl
+```tsx
+import { MapGLStyleSwitcher } from 'map-gl-style-switcher/react-map-gl';
+// React component using react-map-gl's useControl
+// Requires: react + react-map-gl
+```
+
 ### Basic MapLibre GL Integration
 
 ```ts
@@ -253,14 +283,77 @@ const styleSwitcher = new StyleSwitcherControl({
 map.addControl(styleSwitcher, 'bottom-left');
 ```
 
+### React Hook for Custom Map Instances
+
+For React applications where you manage the map instance yourself (e.g., with `useEffect`), use the `useStyleSwitcher` hook:
+
+```tsx
+import React, { useEffect, useRef } from 'react';
+import { useStyleSwitcher } from 'map-gl-style-switcher/react';
+import maplibregl from 'maplibre-gl';
+import 'map-gl-style-switcher/dist/map-gl-style-switcher.css';
+
+const styles = [
+  {
+    id: 'voyager',
+    name: 'Voyager',
+    styleUrl: 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
+  },
+  {
+    id: 'positron',
+    name: 'Positron',
+    styleUrl: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+  },
+];
+
+function MyMapComponent() {
+  const mapContainer = useRef<HTMLDivElement>(null);
+  const map = useRef<maplibregl.Map | null>(null);
+  
+  useEffect(() => {
+    if (!mapContainer.current) return;
+    
+    map.current = new maplibregl.Map({
+      container: mapContainer.current,
+      style: styles[0].styleUrl,
+      center: [0, 0],
+      zoom: 2
+    });
+    
+    return () => map.current?.remove();
+  }, []);
+  
+  // Add style switcher control to the map
+  useStyleSwitcher(map.current, {
+    styles,
+    theme: 'auto',
+    position: 'top-right',
+    onAfterStyleChange: (from, to) => {
+      if (map.current) {
+        map.current.setStyle(to.styleUrl);
+      }
+    }
+  });
+  
+  return <div ref={mapContainer} style={{ width: '100%', height: '400px' }} />;
+}
+```
+
+**Installation for React Hook:**
+```sh
+npm install react maplibre-gl map-gl-style-switcher
+# or for Mapbox GL:
+npm install react mapbox-gl map-gl-style-switcher
+```
+
 ### React Integration with react-map-gl
 
-For React applications using `react-map-gl`, This package provides a ready-to-use `MapGLStyleSwitcher` component:
+For React applications using `react-map-gl`, this package provides a ready-to-use `MapGLStyleSwitcher` component:
 
 ```tsx
 import React, { useState } from 'react';
 import { Map } from 'react-map-gl/maplibre';
-import { MapGLStyleSwitcher } from 'map-gl-style-switcher';
+import { MapGLStyleSwitcher } from 'map-gl-style-switcher/react-map-gl';
 import 'map-gl-style-switcher/dist/map-gl-style-switcher.css';
 
 const styles = [
@@ -409,6 +502,105 @@ const MapComponent = () => {
   );
 };
 ```
+
+### React Integration with Custom Map Instance
+
+For React applications using any map library (MapLibre, Mapbox, etc.) with `useEffect`, you can use the `useStyleSwitcher` hook:
+
+```tsx
+import React, { useEffect, useRef } from 'react';
+import { useStyleSwitcher } from 'map-gl-style-switcher/react';
+import maplibregl from 'maplibre-gl';
+import 'map-gl-style-switcher/dist/map-gl-style-switcher.css';
+
+const styles = [
+  {
+    id: 'voyager',
+    name: 'Voyager',
+    image: './voyager.png',
+    styleUrl: 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
+    description: 'Voyager style from Carto',
+  },
+  {
+    id: 'positron',
+    name: 'Positron',
+    image: './positron.png',
+    styleUrl: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+    description: 'Positron style from Carto',
+  },
+];
+
+function MyMapComponent() {
+  const mapContainer = useRef<HTMLDivElement>(null);
+  const map = useRef<maplibregl.Map | null>(null);
+  
+  useEffect(() => {
+    if (!mapContainer.current) return;
+    
+    map.current = new maplibregl.Map({
+      container: mapContainer.current,
+      style: styles[0].styleUrl,
+      center: [0, 0],
+      zoom: 2
+    });
+    
+    return () => map.current?.remove();
+  }, []);
+  
+  // Add style switcher control to the map
+  useStyleSwitcher(map.current, {
+    styles,
+    theme: 'auto',
+    position: 'top-right',
+    showLabels: true,
+    showImages: true,
+    activeStyleId: styles[0].id,
+    onAfterStyleChange: (from, to) => {
+      if (map.current) {
+        map.current.setStyle(to.styleUrl);
+      }
+    },
+  });
+  
+  return (
+    <div
+      ref={mapContainer}
+      style={{ width: '100%', height: '400px' }}
+    />
+  );
+}
+```
+
+**Installation for React Hook:**
+
+```sh
+npm install maplibre-gl map-gl-style-switcher
+# or for Mapbox GL
+npm install mapbox-gl map-gl-style-switcher
+```
+
+#### useStyleSwitcher Hook
+
+The `useStyleSwitcher` hook accepts a map instance and options:
+
+```tsx
+const control = useStyleSwitcher(map, {
+  styles: StyleItem[]; // Required: Array of map styles
+  activeStyleId?: string; // Currently active style ID
+  theme?: 'light' | 'dark' | 'auto'; // UI theme
+  position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+  showLabels?: boolean; // Show style names
+  showImages?: boolean; // Show style thumbnails
+  animationDuration?: number; // Animation duration in ms
+  maxHeight?: number; // Maximum height of the control
+  rtl?: boolean; // Right-to-left layout
+  classNames?: Partial<StyleSwitcherClassNames>; // Custom CSS classes
+  onBeforeStyleChange?: (from: StyleItem, to: StyleItem) => void;
+  onAfterStyleChange?: (from: StyleItem, to: StyleItem) => void;
+});
+```
+
+**Note:** This hook automatically handles adding/removing the control when the map or options change.
 
 ## Examples
 

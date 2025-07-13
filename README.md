@@ -13,7 +13,7 @@ A TypeScript control for switching Mapbox GL / MapLibre GL map styles. Easily ad
 
 - `StyleSwitcherControl` - Direct IControl implementation for Mapbox/MapLibre GL
 - `MapGLStyleSwitcher` - React component for react-map-gl integration
-_Live demo of the style switcher control in action_
+  _Live demo of the style switcher control in action_
 
 **<a href="https://map-gl-style-switcher.netlify.app/" target="_blank">🌐 Live Demo</a>**
 
@@ -24,6 +24,7 @@ _Live demo of the style switcher control in action_
 ## Available Styles
 
 ![Available Styles](./images/styles.png)
+
 ## Features
 
 - IControl implementation for Mapbox GL / MapLibre GL
@@ -57,97 +58,84 @@ pnpm add map-gl-style-switcher
 
 For quick prototyping or when you don't want to use a build system, you can include the package directly from a CDN:
 
-### unpkg CDN
+### unpkg CDN and jsDelivr CDN
 
 ```html
 <!DOCTYPE html>
 <html>
-<head>
-  <!-- MapLibre GL CSS -->
-  <link href="https://unpkg.com/maplibre-gl@4/dist/maplibre-gl.css" rel="stylesheet" />
-  
-  <!-- Style Switcher CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/map-gl-style-switcher@latest/dist/map-gl-style-switcher.css">
-</head>
-<body>
-  <div id="map" style="width: 100%; height: 100vh;"></div>
+  <head>
+    <!-- jsDelivr CDN -->
+    <!-- MapLibre GL CSS -->
+    <!-- <link href="https://cdn.jsdelivr.net/npm/maplibre-gl@4/dist/maplibre-gl.css" rel="stylesheet" /> -->
 
-  <!-- MapLibre GL JS -->
-  <script src="https://unpkg.com/maplibre-gl@4/dist/maplibre-gl.js"></script>
-  
-  <!-- Style Switcher UMD -->
-  <script src="https://unpkg.com/map-gl-style-switcher@latest/dist/index.umd.js"></script>
-  
-  <script>
-    // StyleSwitcherControl is available globally as MapGLStyleSwitcher.StyleSwitcherControl
-    const { StyleSwitcherControl } = MapGLStyleSwitcher;
-    
-    const styles = [
-      {
-        id: 'voyager',
-        name: 'Voyager',
-        image: 'https://unpkg.com/map-gl-style-switcher@latest/public/voyager.png',
-        styleUrl: 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
-        description: 'Voyager style from Carto',
-      },
-      {
-        id: 'positron',
-        name: 'Positron',
-        image: 'https://unpkg.com/map-gl-style-switcher@latest/public/positron.png',
-        styleUrl: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
-        description: 'Positron style from Carto',
-      }
-    ];
-    
-    const map = new maplibregl.Map({
-      container: 'map',
-      style: styles[0].styleUrl,
-      center: [0, 0],
-      zoom: 2
-    });
-    
-    const styleSwitcher = new StyleSwitcherControl({
-      styles: styles,
-      theme: 'auto',
-      activeStyleId: styles[0].id,
-      onAfterStyleChange: (from, to) => {
-        map.setStyle(to.styleUrl);
-      }
-    });
-    
-    map.addControl(styleSwitcher, 'bottom-left');
-  </script>
-</body>
-</html>
-```
+    <!-- Style Switcher CSS -->
+    <!-- <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/map-gl-style-switcher@latest/dist/map-gl-style-switcher.css"
+    /> -->
+    <!-- MapLibre GL CSS -->
+    <link href="https://unpkg.com/maplibre-gl@4/dist/maplibre-gl.css" rel="stylesheet" />
 
-### jsDelivr CDN
+    <!-- Style Switcher CSS -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/map-gl-style-switcher@latest/dist/map-gl-style-switcher.css"
+    />
+  </head>
+  <body>
+    <div id="map" style="width: 100%; height: 100vh;"></div>
+    <!-- jsDelivr CDN -->
+    <!-- MapLibre GL JS -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@4/dist/maplibre-gl.js"></script> -->
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-  <!-- MapLibre GL CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/maplibre-gl@4/dist/maplibre-gl.css" rel="stylesheet" />
-  
-  <!-- Style Switcher CSS -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/map-gl-style-switcher@latest/dist/map-gl-style-switcher.css">
-</head>
-<body>
-  <div id="map" style="width: 100%; height: 100vh;"></div>
+    <!-- Style Switcher UMD -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/map-gl-style-switcher@latest/dist/index.umd.js"></script> -->
+    <!-- MapLibre GL JS -->
+    <script src="https://unpkg.com/maplibre-gl@4/dist/maplibre-gl.js"></script>
 
-  <!-- MapLibre GL JS -->
-  <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@4/dist/maplibre-gl.js"></script>
-  
-  <!-- Style Switcher UMD -->
-  <script src="https://cdn.jsdelivr.net/npm/map-gl-style-switcher@latest/dist/index.umd.js"></script>
-  
-  <script>
-    // Same JavaScript code as above
-    const { StyleSwitcherControl } = MapGLStyleSwitcher;
-    // ... rest of the code
-  </script>
-</body>
+    <!-- Style Switcher UMD -->
+    <script src="https://unpkg.com/map-gl-style-switcher@latest/dist/index.umd.js"></script>
+
+    <script>
+      // StyleSwitcherControl is available globally as MapGLStyleSwitcher.StyleSwitcherControl
+      const { StyleSwitcherControl } = MapGLStyleSwitcher;
+
+      const styles = [
+        {
+          id: 'voyager',
+          name: 'Voyager',
+          image: 'https://github.com/muimsd/map-gl-style-switcher/tree/main/public/voyager.png',
+          styleUrl: 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
+          description: 'Voyager style from Carto',
+        },
+        {
+          id: 'positron',
+          name: 'Positron',
+          image: 'https://github.com/muimsd/map-gl-style-switcher/tree/main/public/positron.png',
+          styleUrl: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+          description: 'Positron style from Carto',
+        },
+      ];
+
+      const map = new maplibregl.Map({
+        container: 'map',
+        style: styles[0].styleUrl,
+        center: [0, 0],
+        zoom: 2,
+      });
+
+      const styleSwitcher = new StyleSwitcherControl({
+        styles: styles,
+        theme: 'auto',
+        activeStyleId: styles[0].id,
+        onAfterStyleChange: (from, to) => {
+          map.setStyle(to.styleUrl);
+        },
+      });
+
+      map.addControl(styleSwitcher, 'bottom-left');
+    </script>
+  </body>
 </html>
 ```
 
@@ -158,44 +146,26 @@ For modern browsers that support ES modules:
 ```html
 <script type="module">
   import { StyleSwitcherControl } from 'https://unpkg.com/map-gl-style-switcher@latest/dist/index.js';
-  
+
   // Your code here
   const styleSwitcher = new StyleSwitcherControl({
     styles: styles,
-    theme: 'auto'
+    theme: 'auto',
   });
 </script>
 ```
 
-### Specific Version
-
-To use a specific version instead of `@latest`:
-
-```html
-<!-- Replace @latest with specific version, e.g., @0.7.2 -->
-<link rel="stylesheet" href="https://unpkg.com/map-gl-style-switcher@0.7.2/dist/map-gl-style-switcher.css">
-<script src="https://unpkg.com/map-gl-style-switcher@0.7.2/dist/index.umd.js"></script>
-```
-
-## Usage
-
-The package provides three clear entry points for different use cases:
-
-| Entry Point | Use Case | Dependencies | Exports |
-|------------|----------|--------------|---------|
-| `map-gl-style-switcher` | Vanilla JS/TS (default) | maplibre-gl OR mapbox-gl | `StyleSwitcherControl` |
-| `map-gl-style-switcher/react` | React with custom map | react + (maplibre-gl OR mapbox-gl) | `useStyleSwitcher`, `StyleSwitcherControl` |
-| `map-gl-style-switcher/react-map-gl` | React with react-map-gl | react + react-map-gl | `MapGLStyleSwitcher`, `StyleSwitcherControl` |
-
 ### Entry Point Guide
 
 #### For Vanilla JavaScript/TypeScript Users
+
 ```ts
 import { StyleSwitcherControl } from 'map-gl-style-switcher';
 // No React dependencies required
 ```
 
 #### For React with Custom Map Instance
+
 ```tsx
 import { useStyleSwitcher } from 'map-gl-style-switcher/react';
 // Pure React hook - works with any map instance (MapLibre, Mapbox, etc.)
@@ -203,6 +173,7 @@ import { useStyleSwitcher } from 'map-gl-style-switcher/react';
 ```
 
 #### For React with react-map-gl
+
 ```tsx
 import { MapGLStyleSwitcher } from 'map-gl-style-switcher/react-map-gl';
 // React component using react-map-gl's useControl
@@ -221,28 +192,28 @@ const styles = [
   {
     id: 'voyager',
     name: 'Voyager',
-    image: './voyager.png',
+    image: 'https://github.com/muimsd/map-gl-style-switcher/tree/main/public/voyager.png',
     styleUrl: 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
     description: 'Voyager style from Carto',
   },
   {
     id: 'positron',
     name: 'Positron',
-    image: './positron.png',
+    image: 'https://github.com/muimsd/map-gl-style-switcher/tree/main/public/positron.png',
     styleUrl: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
     description: 'Positron style from Carto',
   },
   {
     id: 'dark-matter',
     name: 'Dark Matter',
-    image: './dark.png',
+    image: 'https://github.com/muimsd/map-gl-style-switcher/tree/main/public/dark.png',
     styleUrl: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
     description: 'Dark style from Carto',
   },
   {
     id: 'arcgis-hybrid',
     name: 'ArcGIS Hybrid',
-    image: './arcgis-hybrid.png',
+    image: 'https://github.com/muimsd/map-gl-style-switcher/tree/main/public/arcgis-hybrid.png',
     styleUrl:
       'https://raw.githubusercontent.com/go2garret/maps/main/src/assets/json/arcgis_hybrid.json',
     description: 'Hybrid Satellite style from ESRI',
@@ -250,7 +221,7 @@ const styles = [
   {
     id: 'osm',
     name: 'OSM',
-    image: './osm.png',
+    image: 'https://github.com/muimsd/map-gl-style-switcher/tree/main/public/osm.png',
     styleUrl:
       'https://raw.githubusercontent.com/go2garret/maps/main/src/assets/json/openStreetMap.json',
     description: 'OSM style',
@@ -297,32 +268,36 @@ const styles = [
   {
     id: 'voyager',
     name: 'Voyager',
+    image: 'https://github.com/muimsd/map-gl-style-switcher/tree/main/public/voyager.png',
     styleUrl: 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
+    description: 'Voyager style from Carto',
   },
   {
     id: 'positron',
     name: 'Positron',
+    image: 'https://github.com/muimsd/map-gl-style-switcher/tree/main/public/positron.png',
     styleUrl: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+    description: 'Positron style from Carto',
   },
 ];
 
 function MyMapComponent() {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
-  
+
   useEffect(() => {
     if (!mapContainer.current) return;
-    
+
     map.current = new maplibregl.Map({
       container: mapContainer.current,
       style: styles[0].styleUrl,
       center: [0, 0],
-      zoom: 2
+      zoom: 2,
     });
-    
+
     return () => map.current?.remove();
   }, []);
-  
+
   // Add style switcher control to the map
   useStyleSwitcher(map.current, {
     styles,
@@ -332,18 +307,11 @@ function MyMapComponent() {
       if (map.current) {
         map.current.setStyle(to.styleUrl);
       }
-    }
+    },
   });
-  
+
   return <div ref={mapContainer} style={{ width: '100%', height: '400px' }} />;
 }
-```
-
-**Installation for React Hook:**
-```sh
-npm install react maplibre-gl map-gl-style-switcher
-# or for Mapbox GL:
-npm install react mapbox-gl map-gl-style-switcher
 ```
 
 ### React Integration with react-map-gl
@@ -360,28 +328,28 @@ const styles = [
   {
     id: 'voyager',
     name: 'Voyager',
-    image: './voyager.png',
+    image: 'https://github.com/muimsd/map-gl-style-switcher/tree/main/public/voyager.png',
     styleUrl: 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
     description: 'Voyager style from Carto',
   },
   {
     id: 'positron',
     name: 'Positron',
-    image: './positron.png',
+    image: 'https://github.com/muimsd/map-gl-style-switcher/tree/main/public/positron.png',
     styleUrl: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
     description: 'Positron style from Carto',
   },
   {
     id: 'dark-matter',
     name: 'Dark Matter',
-    image: './dark.png',
+    image: 'https://github.com/muimsd/map-gl-style-switcher/tree/main/public/dark.png',
     styleUrl: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
     description: 'Dark style from Carto',
   },
   {
     id: 'arcgis-hybrid',
     name: 'ArcGIS Hybrid',
-    image: './arcgis-hybrid.png',
+    image: 'https://github.com/muimsd/map-gl-style-switcher/tree/main/public/arcgis-hybrid.png',
     styleUrl:
       'https://raw.githubusercontent.com/go2garret/maps/main/src/assets/json/arcgis_hybrid.json',
     description: 'Hybrid Satellite style from ESRI',
@@ -389,7 +357,7 @@ const styles = [
   {
     id: 'osm',
     name: 'OSM',
-    image: './osm.png',
+    image: 'https://github.com/muimsd/map-gl-style-switcher/tree/main/public/osm.png',
     styleUrl:
       'https://raw.githubusercontent.com/go2garret/maps/main/src/assets/json/openStreetMap.json',
     description: 'OSM style',
@@ -422,12 +390,6 @@ export const MapComponent = () => {
     </Map>
   );
 };
-```
-
-**Installation for React:**
-
-```sh
-npm install react-map-gl maplibre-gl map-gl-style-switcher
 ```
 
 #### MapGLStyleSwitcher Props
@@ -503,103 +465,6 @@ const MapComponent = () => {
 };
 ```
 
-### React Integration with Custom Map Instance
-
-For React applications using any map library (MapLibre, Mapbox, etc.) with `useEffect`, you can use the `useStyleSwitcher` hook:
-
-```tsx
-import React, { useEffect, useRef } from 'react';
-import { useStyleSwitcher } from 'map-gl-style-switcher/react';
-import maplibregl from 'maplibre-gl';
-import 'map-gl-style-switcher/dist/map-gl-style-switcher.css';
-
-const styles = [
-  {
-    id: 'voyager',
-    name: 'Voyager',
-    image: './voyager.png',
-    styleUrl: 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
-    description: 'Voyager style from Carto',
-  },
-  {
-    id: 'positron',
-    name: 'Positron',
-    image: './positron.png',
-    styleUrl: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
-    description: 'Positron style from Carto',
-  },
-];
-
-function MyMapComponent() {
-  const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<maplibregl.Map | null>(null);
-  
-  useEffect(() => {
-    if (!mapContainer.current) return;
-    
-    map.current = new maplibregl.Map({
-      container: mapContainer.current,
-      style: styles[0].styleUrl,
-      center: [0, 0],
-      zoom: 2
-    });
-    
-    return () => map.current?.remove();
-  }, []);
-  
-  // Add style switcher control to the map
-  useStyleSwitcher(map.current, {
-    styles,
-    theme: 'auto',
-    position: 'top-right',
-    showLabels: true,
-    showImages: true,
-    activeStyleId: styles[0].id,
-    onAfterStyleChange: (from, to) => {
-      if (map.current) {
-        map.current.setStyle(to.styleUrl);
-      }
-    },
-  });
-  
-  return (
-    <div
-      ref={mapContainer}
-      style={{ width: '100%', height: '400px' }}
-    />
-  );
-}
-```
-
-**Installation for React Hook:**
-
-```sh
-npm install maplibre-gl map-gl-style-switcher
-# or for Mapbox GL
-npm install mapbox-gl map-gl-style-switcher
-```
-
-#### useStyleSwitcher Hook
-
-The `useStyleSwitcher` hook accepts a map instance and options:
-
-```tsx
-const control = useStyleSwitcher(map, {
-  styles: StyleItem[]; // Required: Array of map styles
-  activeStyleId?: string; // Currently active style ID
-  theme?: 'light' | 'dark' | 'auto'; // UI theme
-  position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
-  showLabels?: boolean; // Show style names
-  showImages?: boolean; // Show style thumbnails
-  animationDuration?: number; // Animation duration in ms
-  maxHeight?: number; // Maximum height of the control
-  rtl?: boolean; // Right-to-left layout
-  classNames?: Partial<StyleSwitcherClassNames>; // Custom CSS classes
-  onBeforeStyleChange?: (from: StyleItem, to: StyleItem) => void;
-  onAfterStyleChange?: (from: StyleItem, to: StyleItem) => void;
-});
-```
-
 **Note:** This hook automatically handles adding/removing the control when the map or options change.
 
 ## Examples
@@ -620,90 +485,8 @@ This example demonstrates:
 - MapLibre GL integration with react-map-gl
 - MapGLStyleSwitcher component usage
 - Multiple basemap styles with thumbnails
-- Responsive design with auto theme detection
-- Style switching with smooth transitions
 
 [View the complete example →](examples/react-map-gl/)
-
-### Vanilla JavaScript Example
-
-The main demo at the root level demonstrates vanilla JavaScript usage:
-
-```bash
-npm install
-npm run dev
-```
-
-This example shows:
-
-- Pure TypeScript/JavaScript implementation
-- MapLibre GL integration
-- StyleSwitcherControl direct usage
-- Multiple themes and configuration options
-
-
-The style switcher supports various map styles. Here are some popular options you can use:
-
-### Carto Basemaps
-
-- **Voyager** - A balanced, colorful style perfect for data visualization and general mapping applications
-- **Positron** - A clean, minimal light basemap ideal for overlaying data with maximum contrast
-- **Dark Matter** - A dark theme basemap excellent for creating striking data visualizations and night mode interfaces
-
-### Satellite & Hybrid
-
-- **ArcGIS Hybrid** - Combines satellite imagery with street labels, perfect for geographic context and navigation
-- **Satellite** - High-resolution satellite imagery for detailed geographic analysis
-
-### OpenStreetMap
-
-- **OSM (OpenStreetMap)** - Community-driven open-source mapping with detailed street-level information
-
-### Example Styles Configuration
-
-```ts
-const styles = [
-  {
-    id: 'voyager',
-    name: 'Voyager',
-    image: './voyager.png',
-    styleUrl: 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
-    description: 'Voyager style from Carto',
-  },
-  {
-    id: 'positron',
-    name: 'Positron',
-    image: './positron.png',
-    styleUrl: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
-    description: 'Positron style from Carto',
-  },
-  {
-    id: 'dark-matter',
-    name: 'Dark Matter',
-    image: './dark.png',
-    styleUrl: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
-    description: 'Dark style from Carto',
-  },
-  {
-    id: 'arcgis-hybrid',
-    name: 'ArcGIS Hybrid',
-    image: './arcgis-hybrid.png',
-    styleUrl:
-      'https://raw.githubusercontent.com/go2garret/maps/main/src/assets/json/arcgis_hybrid.json',
-    description: 'Hybrid Satellite style from ESRI',
-  },
-  {
-    id: 'osm',
-    name: 'OSM',
-    image: './osm.png',
-    styleUrl:
-      'https://raw.githubusercontent.com/go2garret/maps/main/src/assets/json/openStreetMap.json',
-    description: 'OSM style',
-  },
-];
-```
-
-> **Note**: The `description` property is optional and will be shown as a tooltip when users hover over a style option.
 
 ## Configuration Options
 
@@ -778,99 +561,6 @@ const styleSwitcher = new StyleSwitcherControl({
 
 See the default class names in the `StyleSwitcherControl` source for all available keys.
 
-## File Structure
-
-```
-map-gl-style-switcher/
-├── src/
-│   ├── components/
-│   │   ├── StyleSwitcherControl.ts    # Main IControl implementation
-│   │   └── MapGLStyleSwitcher.tsx     # React component for react-map-gl
-│   ├── styles/
-│   │   └── style-switcher.css         # Control styles (themes, RTL support)
-│   ├── types/
-│   │   ├── index.ts                   # TypeScript type definitions
-│   │   └── css.d.ts                   # CSS module declarations
-│   ├── tests/
-│   │   ├── StyleSwitcherControl.test.ts # Core control test suite
-│   │   ├── MapGLStyleSwitcher.test.tsx  # React component test suite
-│   │   └── test-setup.ts              # Jest test setup
-│   ├── demo/
-│   │   ├── main.tsx                   # Demo entry point
-│   │   ├── App.tsx                    # Demo component
-│   │   └── index.css                  # Demo-specific styles
-│   └── index.ts                       # Package entry point
-├── examples/
-│   └── react-map-gl/                  # Complete React example
-│       ├── src/
-│       │   ├── App.tsx                # Example React application
-│       │   └── main.tsx               # React entry point
-│       ├── package.json               # Example dependencies
-│       └── vite.config.ts             # Vite configuration
-├── dist/                              # Built package output
-│   ├── index.js                       # ES Module
-│   ├── index.umd.js                   # UMD Module
-│   ├── index.d.ts                     # TypeScript declarations
-│   └── map-gl-style-switcher.css       # Bundled CSS
-├── package.json                       # Package configuration
-├── rollup.config.js                   # Production build configuration
-├── vite.config.ts                     # Development build configuration
-├── jest.config.js                     # Test configuration
-├── tsconfig.json                      # TypeScript configuration
-└── README.md                          # Documentation
-```
-
-## Development
-
-This project uses npm for dependency management.
-
-### Prerequisites
-
-```sh
-# Ensure you have Node.js 16+ and npm 8+ installed
-node --version
-npm --version
-```
-
-### Quick Start
-
-```sh
-# Install dependencies
-npm install
-
-# Start development server
-npm run dev
-
-# Build for production
-npm run build
-
-# Run tests
-npm test
-
-# Lint and format code
-npm run lint
-npm run format
-
-# Validate before publishing
-npm run validate
-```
-
-## Build for npm
-
-The project uses Rollup for optimized production builds, generating:
-
-- `dist/index.js` - ES module format
-- `dist/index.umd.js` - UMD format for browser usage
-- `dist/index.d.ts` - TypeScript declarations
-- `dist/map-gl-style-switcher.css` - Minified CSS styles
-
-```sh
-# Standard build
-npm run build
-
-# Production build with full validation
-npm run build:prod
-```
 
 ## Contributing
 
@@ -909,23 +599,6 @@ We welcome contributions! Please feel free to submit a Pull Request. For major c
    ```
 
 6. **Submit a pull request**
-
-### Available Scripts
-
-- `npm run dev` - Start development server with hot reload
-- `npm run build` - Build library with Rollup (ES modules, UMD, TypeScript declarations, and CSS)
-- `npm run build:prod` - Production build with validation (type-check, lint, and build)
-- `npm run build:watch` - Build in watch mode with Rollup
-- `npm test` - Run tests
-- `npm run test:watch` - Run tests in watch mode
-- `npm run test:coverage` - Run tests with coverage
-- `npm run lint` - Lint code
-- `npm run lint:fix` - Lint and auto-fix issues
-- `npm run format` - Format code with Prettier
-- `npm run format:check` - Check code formatting
-- `npm run validate` - Run all validation checks
-- `npm run type-check` - Type check TypeScript
-- `npm run clean` - Clean build artifacts
 
 ### Guidelines
 

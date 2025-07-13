@@ -1,6 +1,9 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useMemo } from 'react';
 import { StyleSwitcherControl } from './StyleSwitcherControl';
 import type { StyleSwitcherControlOptions } from './StyleSwitcherControl';
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type MapInstance = any; // MapLibre GL or Mapbox GL Map instance
 
 interface UseStyleSwitcherOptions extends StyleSwitcherControlOptions {
   /** Position of the control on the map */
@@ -49,11 +52,14 @@ interface UseStyleSwitcherOptions extends StyleSwitcherControlOptions {
  * ```
  */
 export function useStyleSwitcher(
-  map: maplibregl.Map | mapboxgl.Map | null,
+  map: MapInstance | null,
   options: UseStyleSwitcherOptions
 ) {
   const controlRef = useRef<StyleSwitcherControl | null>(null);
   const { position, ...controlOptions } = options;
+
+  // Stringify options for deep comparison
+  const optionsKey = useMemo(() => JSON.stringify(controlOptions), [controlOptions]);
 
   useEffect(() => {
     if (!map) return;
@@ -68,19 +74,7 @@ export function useStyleSwitcher(
         controlRef.current = null;
       }
     };
-  }, [map, controlOptions, position]);
-
-  useEffect(() => {
-    // Update control options when they change
-    if (controlRef.current && controlOptions) {
-      // Remove and re-add control with new options
-      if (map) {
-        map.removeControl(controlRef.current);
-        controlRef.current = new StyleSwitcherControl(controlOptions);
-        map.addControl(controlRef.current, position || 'top-right');
-      }
-    }
-  }, [map, controlOptions, position]);
+  }, [map, position, optionsKey, controlOptions]);
 
   return controlRef.current;
 }

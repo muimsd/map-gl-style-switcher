@@ -561,7 +561,6 @@ const styleSwitcher = new StyleSwitcherControl({
 
 See the default class names in the `StyleSwitcherControl` source for all available keys.
 
-
 ## Contributing
 
 We welcome contributions! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.

@@ -59,7 +59,10 @@ export function useStyleSwitcher(
   const { position, ...controlOptions } = options;
 
   // Stringify options for deep comparison
-  const optionsKey = useMemo(() => JSON.stringify(controlOptions), [controlOptions]);
+  const optionsKey = useMemo(
+    () => JSON.stringify(controlOptions),
+    [controlOptions]
+  );
 
   useEffect(() => {
     if (!map) return;

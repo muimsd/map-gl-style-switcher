@@ -11,21 +11,25 @@ jest.mock('../components/StyleSwitcherControl', () => ({
   StyleSwitcherControl: jest.fn(),
 }));
 
-const MockedStyleSwitcherControl = StyleSwitcherControl as jest.MockedClass<typeof StyleSwitcherControl>;
+const MockedStyleSwitcherControl = StyleSwitcherControl as jest.MockedClass<
+  typeof StyleSwitcherControl
+>;
 
 describe('useStyleSwitcher', () => {
   const mockStyles: StyleItem[] = [
     {
       id: 'voyager',
       name: 'Voyager',
-      image: 'https://github.com/muimsd/map-gl-style-switcher/tree/main/public/voyager.png',
+      image:
+        'https://github.com/muimsd/map-gl-style-switcher/tree/main/public/voyager.png',
       styleUrl: 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
       description: 'Voyager style from Carto',
     },
     {
       id: 'positron',
       name: 'Positron',
-      image: 'https://github.com/muimsd/map-gl-style-switcher/tree/main/public/positron.png',
+      image:
+        'https://github.com/muimsd/map-gl-style-switcher/tree/main/public/positron.png',
       styleUrl: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
       description: 'Positron style from Carto',
     },
@@ -81,7 +85,10 @@ describe('useStyleSwitcher', () => {
       styles: mockStyles,
       activeStyleId: 'voyager',
     });
-    expect(mockMap.addControl).toHaveBeenCalledWith(mockControlInstance, 'top-right');
+    expect(mockMap.addControl).toHaveBeenCalledWith(
+      mockControlInstance,
+      'top-right'
+    );
   });
 
   test('should use custom position when provided', () => {
@@ -93,7 +100,10 @@ describe('useStyleSwitcher', () => {
       })
     );
 
-    expect(mockMap.addControl).toHaveBeenCalledWith(mockControlInstance, 'bottom-left');
+    expect(mockMap.addControl).toHaveBeenCalledWith(
+      mockControlInstance,
+      'bottom-left'
+    );
   });
 
   test('should remove control when component unmounts', () => {
@@ -104,7 +114,10 @@ describe('useStyleSwitcher', () => {
       })
     );
 
-    expect(mockMap.addControl).toHaveBeenCalledWith(mockControlInstance, 'top-right');
+    expect(mockMap.addControl).toHaveBeenCalledWith(
+      mockControlInstance,
+      'top-right'
+    );
 
     unmount();
 
@@ -130,13 +143,19 @@ describe('useStyleSwitcher', () => {
       }
     );
 
-    expect(mockMap.addControl).toHaveBeenCalledWith(mockControlInstance, 'top-right');
+    expect(mockMap.addControl).toHaveBeenCalledWith(
+      mockControlInstance,
+      'top-right'
+    );
 
     // Change the map
     rerender({ map: newMockMap });
 
     expect(mockMap.removeControl).toHaveBeenCalledWith(mockControlInstance);
-    expect(newMockMap.addControl).toHaveBeenCalledWith(expect.any(Object), 'top-right');
+    expect(newMockMap.addControl).toHaveBeenCalledWith(
+      expect.any(Object),
+      'top-right'
+    );
   });
 
   test('should recreate control when options change', () => {
@@ -147,8 +166,7 @@ describe('useStyleSwitcher', () => {
 
     const { rerender } = renderHook(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ({ options }: { options: any }) => 
-        useStyleSwitcher(mockMap, options),
+      ({ options }: { options: any }) => useStyleSwitcher(mockMap, options),
       {
         initialProps: {
           options: initialOptions,
@@ -195,13 +213,19 @@ describe('useStyleSwitcher', () => {
       }
     );
 
-    expect(mockMap.addControl).toHaveBeenCalledWith(mockControlInstance, 'top-right');
+    expect(mockMap.addControl).toHaveBeenCalledWith(
+      mockControlInstance,
+      'top-right'
+    );
 
     // Change position
     rerender({ position: 'bottom-left' });
 
     expect(mockMap.removeControl).toHaveBeenCalledWith(mockControlInstance);
-    expect(mockMap.addControl).toHaveBeenCalledWith(expect.any(Object), 'bottom-left');
+    expect(mockMap.addControl).toHaveBeenCalledWith(
+      expect.any(Object),
+      'bottom-left'
+    );
   });
 
   test('should handle all control options', () => {
@@ -230,7 +254,10 @@ describe('useStyleSwitcher', () => {
       showLabels: true,
       showImages: false,
     });
-    expect(mockMap.addControl).toHaveBeenCalledWith(mockControlInstance, 'top-left');
+    expect(mockMap.addControl).toHaveBeenCalledWith(
+      mockControlInstance,
+      'top-left'
+    );
   });
 
   test('should handle map becoming null', () => {
@@ -246,7 +273,10 @@ describe('useStyleSwitcher', () => {
       }
     );
 
-    expect(mockMap.addControl).toHaveBeenCalledWith(mockControlInstance, 'top-right');
+    expect(mockMap.addControl).toHaveBeenCalledWith(
+      mockControlInstance,
+      'top-right'
+    );
 
     // Set map to null
     rerender({ map: null });

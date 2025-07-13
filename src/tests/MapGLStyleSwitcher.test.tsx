@@ -306,10 +306,11 @@ describe('MapGLStyleSwitcher', () => {
     const factoryFunction = mockUseControl.mock.calls[0][0];
 
     // Create a mock context for the factory function
-    const mockContext = { map: {}, viewport: {}, mapLib: {} } as unknown as any;
+    const mockContext = { map: {}, viewport: {}, mapLib: {} };
 
     // Call the factory function to create the control
-    factoryFunction(mockContext);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    factoryFunction(mockContext as any);
 
     // Verify StyleSwitcherControl was created
     expect(mockStyleSwitcherControl).toHaveBeenCalledTimes(1);

@@ -312,17 +312,6 @@ We welcome contributions! Please feel free to submit a Pull Request. For major c
 
 MIT License - see [LICENSE](LICENSE) file for details.
 
-## Author
-
-**Muhammad Imran Siddique**
-
-- GitHub: [@muimsd](https://github.com/muimsd)
-
-## Repository
-
-- GitHub: [https://github.com/muimsd/map-gl-style-switcher](https://github.com/muimsd/map-gl-style-switcher)
-- Issues: [https://github.com/muimsd/map-gl-style-switcher/issues](https://github.com/muimsd/map-gl-style-switcher/issues)
-
 ---
 
 Made with ❤️ for the MapLibre GL and Mapbox GL community

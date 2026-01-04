@@ -66,7 +66,7 @@ const umdConfig = {
   output: {
     file: 'dist/index.umd.js',
     format: 'umd',
-    name: 'MapGLStyleSwitcher',
+    name: 'mapglstyleswitcher',
     sourcemap: true,
     exports: 'named',
     globals: {

@@ -195,8 +195,9 @@ export default function App() {
 3. **RTL Text Support**: Includes Arabic/Hebrew text rendering plugin
 4. **Responsive UI**: Container and text adapt to theme changes with smooth transitions
 5. **Enhanced Callbacks**: Both `onBeforeStyleChange` and `onAfterStyleChange` callbacks
-6. **Auto Theme**: Style switcher uses `theme="auto"` for automatic theme detection
-7. **Full TypeScript Support**: Complete type safety with proper interfaces
+6. **Auto Theme**: Style switcher uses `theme="auto"` for automatic theme detection — reacts to OS preference changes in real time without any extra code
+7. **Imperative Updates**: Use `control.updateOptions({ activeStyleId, theme })` to update the control programmatically after it has been added to the map
+8. **Full TypeScript Support**: Complete type safety with proper interfaces
 ## Map Styles
 
 The example includes comprehensive basemap styles with high-quality images:
@@ -216,7 +217,7 @@ The example features automatic system theme detection:
 - **System Detection**: Uses `matchMedia('(prefers-color-scheme: dark)')` to detect user preference
 - **Responsive UI**: Background, text colors, and layout adapt automatically
 - **Smooth Transitions**: All theme changes include smooth 0.3s transitions
-- **Auto Style Switcher**: The control itself uses `theme="auto"` for automatic theming
+- **Auto Style Switcher**: The control itself uses `theme="auto"` for automatic theming — it registers a `matchMedia` change listener internally and updates its appearance without any extra code in your app
 
 Try changing your system's dark/light mode to see the example adapt in real-time!
 

@@ -65,8 +65,8 @@ describe('StyleSwitcherControl', () => {
       expect(control).toBeInstanceOf(StyleSwitcherControl);
     });
 
-    it('should validate styles and filter out invalid ones', () => {
-      const invalidStyles = [
+    it('should accept styles with empty ids without throwing', () => {
+      const stylesWithEmptyId = [
         { id: '', name: 'Invalid', image: 'test.png', styleUrl: 'test' }, // empty id
         {
           id: 'valid',
@@ -76,7 +76,7 @@ describe('StyleSwitcherControl', () => {
         },
       ];
 
-      const control = new StyleSwitcherControl({ styles: invalidStyles });
+      const control = new StyleSwitcherControl({ styles: stylesWithEmptyId });
       expect(control).toBeInstanceOf(StyleSwitcherControl);
     });
 
@@ -216,6 +216,32 @@ describe('StyleSwitcherControl', () => {
       expect(container.getAttribute('aria-expanded')).toBe('false');
     });
 
+    it('should not re-render when expand state is already the same', () => {
+      // Expand the control
+      container.dispatchEvent(new Event('mouseenter'));
+      const listRef = container.querySelector('.style-switcher-list');
+
+      // Dispatch mouseenter again — same state, should hit early return in _setExpanded
+      container.dispatchEvent(new Event('mouseenter'));
+
+      // If no re-render occurred, the list DOM node reference is unchanged
+      expect(container.querySelector('.style-switcher-list')).toBe(listRef);
+    });
+
+    it('should not throw when events fire after control is removed', () => {
+      // Expand so _expanded = true
+      container.dispatchEvent(new Event('mouseenter'));
+
+      // Remove the control — sets _container to null
+      control.onRemove();
+
+      // mouseleave on the detached element triggers _setExpanded(false) → _applyTheme()
+      // with _container === null; should hit early return without throwing
+      expect(() => {
+        container.dispatchEvent(new Event('mouseleave'));
+      }).not.toThrow();
+    });
+
     it('should render style items when expanded', () => {
       // Expand the control
       container.dispatchEvent(new Event('mouseenter'));
@@ -313,6 +339,24 @@ describe('StyleSwitcherControl', () => {
       expect(selectedItems.length).toBeGreaterThan(0);
     });
 
+    it('should handle style change without callbacks defined', async () => {
+      const controlNoCallbacks = new StyleSwitcherControl({ styles: mockStyles });
+      const containerNoCallbacks = controlNoCallbacks.onAdd(mockMap);
+      document.body.appendChild(containerNoCallbacks);
+
+      // Expand and click a different style — no callbacks provided
+      containerNoCallbacks.dispatchEvent(new Event('mouseenter'));
+      const list = containerNoCallbacks.querySelector('.style-switcher-list');
+      const styleItems = list?.querySelectorAll('[role="option"]');
+      const satelliteItem = styleItems?.[1] as HTMLElement;
+
+      expect(() => satelliteItem.click()).not.toThrow();
+
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      controlNoCallbacks.onRemove();
+    });
+
     it('should not call callbacks when clicking the same style', async () => {
       // Expand the control
       container.dispatchEvent(new Event('mouseenter'));
@@ -359,10 +403,9 @@ describe('StyleSwitcherControl', () => {
       control.onRemove();
     });
 
-    it('should handle auto theme based on system preference', () => {
-      // Mock matchMedia to return dark preference
+    it('should apply dark theme when auto and dark mode preferred', () => {
       const mockMatchMedia = jest.fn(() => ({
-        matches: true, // Simulating dark mode preference
+        matches: true, // dark mode preference
         media: '(prefers-color-scheme: dark)',
         onchange: null,
         addListener: jest.fn(),
@@ -386,6 +429,74 @@ describe('StyleSwitcherControl', () => {
       expect(container.classList.contains('style-switcher-dark')).toBe(true);
 
       control.onRemove();
+    });
+
+    it('should apply light theme when auto and light mode preferred', () => {
+      const mockMatchMedia = jest.fn(() => ({
+        matches: false, // light mode preference
+        media: '(prefers-color-scheme: dark)',
+        onchange: null,
+        addListener: jest.fn(),
+        removeListener: jest.fn(),
+        addEventListener: jest.fn(),
+        removeEventListener: jest.fn(),
+        dispatchEvent: jest.fn(),
+      }));
+
+      Object.defineProperty(window, 'matchMedia', {
+        writable: true,
+        value: mockMatchMedia,
+      });
+
+      const control = new StyleSwitcherControl({
+        styles: mockStyles,
+        theme: 'auto',
+      });
+      const container = control.onAdd(mockMap);
+
+      expect(container.classList.contains('style-switcher-light')).toBe(true);
+      expect(container.classList.contains('style-switcher-dark')).toBe(false);
+
+      control.onRemove();
+    });
+
+    it('should update theme when OS preference changes', () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let changeHandler: any = null;
+      const mockMQ = {
+        matches: false,
+        media: '(prefers-color-scheme: dark)',
+        onchange: null,
+        addListener: jest.fn(),
+        removeListener: jest.fn(),
+        addEventListener: jest.fn((_: string, fn: () => void) => {
+          changeHandler = fn;
+        }),
+        removeEventListener: jest.fn(),
+        dispatchEvent: jest.fn(),
+      };
+
+      Object.defineProperty(window, 'matchMedia', {
+        writable: true,
+        value: jest.fn(() => mockMQ),
+      });
+
+      const control = new StyleSwitcherControl({
+        styles: mockStyles,
+        theme: 'auto',
+      });
+      const container = control.onAdd(mockMap);
+      expect(container.classList.contains('style-switcher-light')).toBe(true);
+
+      // Simulate OS switching to dark mode
+      mockMQ.matches = true;
+      changeHandler?.();
+
+      expect(container.classList.contains('style-switcher-dark')).toBe(true);
+      expect(container.classList.contains('style-switcher-light')).toBe(false);
+
+      control.onRemove();
+      expect(mockMQ.removeEventListener).toHaveBeenCalled();
     });
   });
 
@@ -526,6 +637,69 @@ describe('StyleSwitcherControl', () => {
       expect(container.classList.contains('my-custom-container')).toBe(true);
 
       control.onRemove();
+    });
+  });
+
+  describe('updateOptions', () => {
+    let control: StyleSwitcherControl;
+    let container: HTMLElement;
+
+    beforeEach(() => {
+      control = new StyleSwitcherControl({
+        styles: mockStyles,
+        activeStyleId: 'streets',
+      });
+      container = control.onAdd(mockMap);
+      document.body.appendChild(container);
+    });
+
+    afterEach(() => {
+      control.onRemove();
+    });
+
+    it('should update activeStyleId and re-render', () => {
+      control.updateOptions({ activeStyleId: 'satellite' });
+
+      const activeItem = container.querySelector('[aria-selected="true"]');
+      expect(activeItem?.querySelector('span')?.textContent).toBe('Satellite');
+    });
+
+    it('should update theme', () => {
+      control.updateOptions({ theme: 'dark' });
+
+      expect(container.classList.contains('style-switcher-dark')).toBe(true);
+    });
+
+    it('should update classNames', () => {
+      control.updateOptions({ classNames: { item: 'updated-item' } });
+
+      container.dispatchEvent(new Event('mouseenter'));
+      const items = container.querySelectorAll('[role="option"]');
+      expect(items[0].classList.contains('updated-item')).toBe(true);
+    });
+
+    it('should not throw when called before onAdd', () => {
+      const earlyControl = new StyleSwitcherControl({ styles: mockStyles });
+      expect(() => {
+        earlyControl.updateOptions({ activeStyleId: 'satellite' });
+      }).not.toThrow();
+    });
+
+    it('should handle empty styles gracefully (no crash)', () => {
+      expect(() => {
+        control.updateOptions({ styles: [] });
+      }).not.toThrow();
+    });
+  });
+
+  describe('Empty styles', () => {
+    it('should not crash when onAdd is called with empty styles', () => {
+      const control = new StyleSwitcherControl({ styles: [] });
+      expect(() => {
+        const container = control.onAdd(mockMap);
+        document.body.appendChild(container);
+        control.onRemove();
+      }).not.toThrow();
     });
   });
 });

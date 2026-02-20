@@ -44,10 +44,19 @@ describe('MapGLStyleSwitcher', () => {
 
   const mockOnStyleChange = jest.fn();
 
+  // Default mock instance used by tests that don't need to inspect updateOptions
+  const mockInstance = {
+    onAdd: jest.fn(),
+    onRemove: jest.fn(),
+    updateOptions: jest.fn(),
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
     mockUseControl.mockClear();
     mockStyleSwitcherControl.mockClear();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    mockStyleSwitcherControl.mockImplementation(() => mockInstance as any);
   });
 
   test('should render without crashing', () => {
@@ -436,7 +445,8 @@ describe('MapGLStyleSwitcher', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     factoryFunction(mockContext as any);
 
-    // Verify StyleSwitcherControl was called with all the correct props
+    // Verify StyleSwitcherControl was called with all the correct props.
+    // Both callbacks are wrapped in ref-delegating closures, so match via Any<Function>.
     expect(mockStyleSwitcherControl).toHaveBeenCalledWith({
       styles: mockStyles,
       activeStyleId: 'voyager',
@@ -447,8 +457,101 @@ describe('MapGLStyleSwitcher', () => {
       maxHeight: 400,
       rtl: true,
       classNames: customClassNames,
-      onBeforeStyleChange: mockOnBeforeStyleChange,
-      onAfterStyleChange: expect.any(Function), // This is the wrapped function
+      onBeforeStyleChange: expect.any(Function),
+      onAfterStyleChange: expect.any(Function),
+    });
+  });
+
+  describe('Prop updates via updateOptions', () => {
+    // For these tests useControl must invoke its factory so controlRef.current
+    // is populated and the updateOptions effect can fire.
+    beforeEach(() => {
+      mockUseControl.mockImplementation(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (factory: any): any => factory()
+      );
+    });
+
+    test('should call updateOptions when activeStyleId changes', () => {
+      const { rerender } = render(
+        <MapGLStyleSwitcher styles={mockStyles} activeStyleId="voyager" />
+      );
+
+      mockInstance.updateOptions.mockClear();
+
+      rerender(
+        <MapGLStyleSwitcher styles={mockStyles} activeStyleId="positron" />
+      );
+
+      expect(mockInstance.updateOptions).toHaveBeenCalledWith(
+        expect.objectContaining({ activeStyleId: 'positron' })
+      );
+    });
+
+    test('should call updateOptions when theme changes', () => {
+      const { rerender } = render(
+        <MapGLStyleSwitcher styles={mockStyles} theme="light" />
+      );
+
+      mockInstance.updateOptions.mockClear();
+
+      rerender(<MapGLStyleSwitcher styles={mockStyles} theme="dark" />);
+
+      expect(mockInstance.updateOptions).toHaveBeenCalledWith(
+        expect.objectContaining({ theme: 'dark' })
+      );
+    });
+
+    test('should not include callbacks in updateOptions call', () => {
+      const onStyleChange = jest.fn();
+      const { rerender } = render(
+        <MapGLStyleSwitcher
+          styles={mockStyles}
+          activeStyleId="voyager"
+          onStyleChange={onStyleChange}
+        />
+      );
+
+      mockInstance.updateOptions.mockClear();
+
+      rerender(
+        <MapGLStyleSwitcher
+          styles={mockStyles}
+          activeStyleId="positron"
+          onStyleChange={onStyleChange}
+        />
+      );
+
+      const callArg = mockInstance.updateOptions.mock.calls[0][0];
+      expect(callArg).not.toHaveProperty('onStyleChange');
+      expect(callArg).not.toHaveProperty('onAfterStyleChange');
+      expect(callArg).not.toHaveProperty('onBeforeStyleChange');
+    });
+
+    test('changing only callbacks does not trigger updateOptions', () => {
+      const firstCallback = jest.fn();
+      const secondCallback = jest.fn();
+
+      const { rerender } = render(
+        <MapGLStyleSwitcher
+          styles={mockStyles}
+          onStyleChange={firstCallback}
+        />
+      );
+
+      // Clear call counts recorded during initial mount
+      mockInstance.updateOptions.mockClear();
+
+      // Swap the callback — callbacks are stored in refs so updateOptions
+      // should NOT be called (callbacks are excluded from the effect deps)
+      rerender(
+        <MapGLStyleSwitcher
+          styles={mockStyles}
+          onStyleChange={secondCallback}
+        />
+      );
+
+      expect(mockInstance.updateOptions).not.toHaveBeenCalled();
     });
   });
 });

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useControl } from 'react-map-gl/maplibre';
 import { StyleSwitcherControl } from './StyleSwitcherControl';
 import type { StyleItem } from './StyleSwitcherControl';
@@ -80,9 +80,26 @@ export const MapGLStyleSwitcher: React.FC<MapGLStyleSwitcherProps> = ({
   onAfterStyleChange,
   onStyleChange,
 }) => {
+  // Keep callback refs up-to-date every render so the control always calls
+  // the latest version without needing to recreate or update the control
+  // instance each time a callback identity changes.
+  const onBeforeStyleChangeRef = useRef(onBeforeStyleChange);
+  const onAfterStyleChangeRef = useRef(onAfterStyleChange);
+  const onStyleChangeRef = useRef(onStyleChange);
+  onBeforeStyleChangeRef.current = onBeforeStyleChange;
+  onAfterStyleChangeRef.current = onAfterStyleChange;
+  onStyleChangeRef.current = onStyleChange;
+
+  // Stable ref to the underlying control instance so the update effect below
+  // can imperatively call updateOptions when non-callback props change.
+  const controlRef = useRef<StyleSwitcherControl | null>(null);
+
+  // useControl's factory is only invoked once (on mount) by react-map-gl.
+  // Callbacks are intentionally delegated through refs so they never need to
+  // cause a control recreation.
   useControl(
-    () =>
-      new StyleSwitcherControl({
+    () => {
+      const ctrl = new StyleSwitcherControl({
         styles,
         activeStyleId,
         theme,
@@ -92,20 +109,35 @@ export const MapGLStyleSwitcher: React.FC<MapGLStyleSwitcherProps> = ({
         maxHeight,
         rtl,
         classNames,
-        onBeforeStyleChange,
+        onBeforeStyleChange: (from, to) =>
+          onBeforeStyleChangeRef.current?.(from, to),
         onAfterStyleChange: (from, to) => {
-          // Call the provided onAfterStyleChange callback first
-          onAfterStyleChange?.(from, to);
-          // Then call the simplified onStyleChange callback
-          onStyleChange?.(to.styleUrl);
+          onAfterStyleChangeRef.current?.(from, to);
+          onStyleChangeRef.current?.(to.styleUrl);
         },
-      }),
-    {
-      position,
-    }
+      });
+      controlRef.current = ctrl;
+      return ctrl;
+    },
+    { position }
   );
 
-  // This component doesn't render anything visible itself
+  // Propagate non-callback prop changes to the existing control instance.
+  // Callbacks are excluded because they are handled via refs above.
+  useEffect(() => {
+    controlRef.current?.updateOptions({
+      styles,
+      activeStyleId,
+      theme,
+      showLabels,
+      showImages,
+      animationDuration,
+      maxHeight,
+      rtl,
+      classNames,
+    });
+  }, [styles, activeStyleId, theme, showLabels, showImages, animationDuration, maxHeight, rtl, classNames]);
+
   return null;
 };
 

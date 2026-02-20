@@ -1,4 +1,4 @@
-import { useEffect, useRef, useMemo } from 'react';
+import { useEffect, useRef } from 'react';
 import { StyleSwitcherControl } from './StyleSwitcherControl';
 import type { StyleSwitcherControlOptions } from './StyleSwitcherControl';
 
@@ -58,11 +58,10 @@ export function useStyleSwitcher(
   const controlRef = useRef<StyleSwitcherControl | null>(null);
   const { position, ...controlOptions } = options;
 
-  // Stringify options for deep comparison
-  const optionsKey = useMemo(
-    () => JSON.stringify(controlOptions),
-    [controlOptions]
-  );
+  // JSON-serialised string is stable across renders when content is unchanged,
+  // giving the effect a reliable deep-equality check without useMemo overhead
+  // (controlOptions is a new object reference every render regardless).
+  const optionsKey = JSON.stringify(controlOptions);
 
   useEffect(() => {
     if (!map) return;
@@ -77,7 +76,8 @@ export function useStyleSwitcher(
         controlRef.current = null;
       }
     };
-  }, [map, position, optionsKey, controlOptions]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map, position, optionsKey]);
 
   return controlRef.current;
 }

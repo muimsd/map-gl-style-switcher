@@ -164,8 +164,9 @@ export default function App() {
 1. **System Theme Detection**: Automatically detects and responds to system dark/light mode
 2. **Responsive UI**: Container and text adapt to theme changes with smooth transitions
 3. **Enhanced Callbacks**: Both `onBeforeStyleChange` and `onStyleChange` callbacks
-4. **Auto Theme**: Style switcher uses `theme="auto"` for automatic theme detection
-5. **Full TypeScript Support**: Complete type safety with proper interfaces
+4. **Auto Theme**: Style switcher uses `theme="auto"` for automatic theme detection — reacts to OS preference changes in real time
+5. **Reactive Props**: Changing `activeStyleId`, `theme`, `styles`, etc. after mount propagates to the control automatically
+6. **Full TypeScript Support**: Complete type safety with proper interfaces
 
 ## Map Styles
 
@@ -246,7 +247,8 @@ import { MapGLStyleSwitcher } from 'map-gl-style-switcher/react-map-gl';
 ### vs. Manual Integration
 Unlike manual control addition, this approach:
 - ✅ No need for `useEffect` hooks to add/remove controls
-- ✅ Automatic prop updates and re-rendering
+- ✅ Prop changes (`activeStyleId`, `theme`, `styles`, etc.) propagate to the control automatically via `updateOptions()`
+- ✅ Callbacks always reference the latest function via refs — no stale closures
 - ✅ Proper React lifecycle management
 - ✅ Better TypeScript integration
 - ✅ Consistent with React patterns

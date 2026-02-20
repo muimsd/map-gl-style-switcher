@@ -45,6 +45,8 @@ export class StyleSwitcherControl implements IControl {
   private _activeStyleId: string;
   private _expanded: boolean = false;
   private _classNames: Required<StyleSwitcherClassNames>;
+  private _mediaQuery: MediaQueryList | null = null;
+  private _mediaQueryHandler: (() => void) | null = null;
 
   constructor(options: StyleSwitcherControlOptions) {
     // Ensure at least one of showLabels or showImages is true
@@ -103,6 +105,13 @@ export class StyleSwitcherControl implements IControl {
     // Theme support
     this._applyTheme();
 
+    // Keep auto theme in sync with OS preference changes
+    if (this._options.theme === 'auto' && window.matchMedia) {
+      this._mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      this._mediaQueryHandler = () => this._applyTheme();
+      this._mediaQuery.addEventListener('change', this._mediaQueryHandler);
+    }
+
     this._container.addEventListener('mouseenter', () =>
       this._setExpanded(true)
     );
@@ -137,7 +146,29 @@ export class StyleSwitcherControl implements IControl {
     }
   }
 
+  /**
+   * Update control options after it has been added to the map.
+   * Only the supplied keys are merged; omitted keys are unchanged.
+   */
+  updateOptions(updates: Partial<StyleSwitcherControlOptions>): void {
+    if ('activeStyleId' in updates && updates.activeStyleId !== undefined) {
+      this._activeStyleId = updates.activeStyleId;
+    }
+    if ('classNames' in updates) {
+      this._classNames = { ...this._classNames, ...updates.classNames };
+    }
+    Object.assign(this._options, updates);
+    if (this._container) {
+      this._render();
+    }
+  }
+
   onRemove() {
+    if (this._mediaQuery && this._mediaQueryHandler) {
+      this._mediaQuery.removeEventListener('change', this._mediaQueryHandler);
+      this._mediaQuery = null;
+      this._mediaQueryHandler = null;
+    }
     if (this._container && this._container.parentNode) {
       this._container.parentNode.removeChild(this._container);
     }
@@ -170,6 +201,8 @@ export class StyleSwitcherControl implements IControl {
     const currentStyle =
       this._options.styles.find(s => s.id === this._activeStyleId) ||
       this._options.styles[0];
+
+    if (!currentStyle) return;
 
     // List (expanded)
     if (this._expanded) {

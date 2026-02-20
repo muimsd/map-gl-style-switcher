@@ -1,5 +1,6 @@
 import typescript from '@rollup/plugin-typescript';
 import resolve from '@rollup/plugin-node-resolve';
+import terser from '@rollup/plugin-terser';
 import { dts } from 'rollup-plugin-dts';
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs';
 import { fileURLToPath } from 'url';
@@ -88,7 +89,8 @@ const umdConfig = {
       declaration: false,
       outDir: 'dist',
       rootDir: 'src'
-    })
+    }),
+    terser()
   ],
   onwarn(warning, warn) {
     if (warning.code === 'THIS_IS_UNDEFINED') return;

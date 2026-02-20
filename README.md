@@ -5,7 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Netlify Status](https://api.netlify.com/api/v1/badges/ea3ee6af-161d-46be-9006-9d31ad52da3c/deploy-status)](https://app.netlify.com/projects/map-gl-style-switcher/deploys)
 
-<!-- [![Coverage Status](https://codecov.io/gh/muimsd/map-gl-style-switcher/branch/main/graph/badge.svg)](https://codecov.io/gh/muimsd/map-gl-style-switcher) -->
+[![Coverage Status](https://codecov.io/gh/muimsd/map-gl-style-switcher/branch/main/graph/badge.svg)](https://codecov.io/gh/muimsd/map-gl-style-switcher)
 
 A TypeScript control for switching Mapbox GL / MapLibre GL map styles. Easily add a floating style switcher to your map app, with support for multiple styles, images, dark/light themes, and before/after change callbacks.
 
@@ -71,14 +71,16 @@ const styles: StyleItem[] = [
   {
     id: 'voyager',
     name: 'Voyager',
-    image: 'https://raw.githubusercontent.com/muimsd/map-gl-style-switcher/refs/heads/main/public/voyager.png',
+    image:
+      'https://raw.githubusercontent.com/muimsd/map-gl-style-switcher/refs/heads/main/public/voyager.png',
     styleUrl: 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
     description: 'Voyager style from Carto',
   },
   {
     id: 'positron',
     name: 'Positron',
-    image: 'https://raw.githubusercontent.com/muimsd/map-gl-style-switcher/refs/heads/main/public/positron.png',
+    image:
+      'https://raw.githubusercontent.com/muimsd/map-gl-style-switcher/refs/heads/main/public/positron.png',
     styleUrl: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
     description: 'Positron style from Carto',
   },
@@ -107,7 +109,9 @@ import { useStyleSwitcher, type StyleItem } from 'map-gl-style-switcher/react';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import 'map-gl-style-switcher/dist/map-gl-style-switcher.css';
 
-const styles: StyleItem[] = [/* ... */];
+const styles: StyleItem[] = [
+  /* ... */
+];
 
 function MapComponent() {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -150,7 +154,9 @@ import { MapGLStyleSwitcher, type StyleItem } from 'map-gl-style-switcher/react-
 import 'maplibre-gl/dist/maplibre-gl.css';
 import 'map-gl-style-switcher/dist/map-gl-style-switcher.css';
 
-const styles: StyleItem[] = [/* ... */];
+const styles: StyleItem[] = [
+  /* ... */
+];
 
 function MyMap() {
   const [mapStyle, setMapStyle] = useState(styles[0].styleUrl);
@@ -192,35 +198,35 @@ function MyMap() {
 
 ```ts
 interface StyleSwitcherControlOptions {
-  styles: StyleItem[];                                          // Array of map styles (required)
-  activeStyleId?: string;                                       // Active style ID (default: first style)
+  styles: StyleItem[]; // Array of map styles (required)
+  activeStyleId?: string; // Active style ID (default: first style)
   onBeforeStyleChange?: (from: StyleItem, to: StyleItem) => void; // Called before style changes
-  onAfterStyleChange?: (from: StyleItem, to: StyleItem) => void;  // Called after style changes
-  showLabels?: boolean;                                         // Show style names (default: true)
-  showImages?: boolean;                                         // Show thumbnails (default: true)
-  animationDuration?: number;                                   // Expand animation in ms (default: 200)
-  maxHeight?: number;                                           // Max list height in px (default: 300)
-  theme?: 'light' | 'dark' | 'auto';                           // UI theme (default: 'light')
-  classNames?: Partial<StyleSwitcherClassNames>;                // Custom CSS class overrides
-  rtl?: boolean;                                                // RTL layout (default: false)
+  onAfterStyleChange?: (from: StyleItem, to: StyleItem) => void; // Called after style changes
+  showLabels?: boolean; // Show style names (default: true)
+  showImages?: boolean; // Show thumbnails (default: true)
+  animationDuration?: number; // Expand animation in ms (default: 200)
+  maxHeight?: number; // Max list height in px (default: 300)
+  theme?: 'light' | 'dark' | 'auto'; // UI theme (default: 'light')
+  classNames?: Partial<StyleSwitcherClassNames>; // Custom CSS class overrides
+  rtl?: boolean; // RTL layout (default: false)
 }
 
 interface StyleItem {
-  id: string;           // Unique identifier
-  name: string;         // Display name
-  image: string;        // Thumbnail URL or data URI
-  styleUrl: string;     // MapLibre/Mapbox style URL
+  id: string; // Unique identifier
+  name: string; // Display name
+  image: string; // Thumbnail URL or data URI
+  styleUrl: string; // MapLibre/Mapbox style URL
   description?: string; // Optional tooltip text
 }
 
 interface StyleSwitcherClassNames {
-  container: string;     // Main container class
-  list: string;          // Expanded list container class
-  item: string;          // Individual style item class
-  itemSelected: string;  // Selected item class
+  container: string; // Main container class
+  list: string; // Expanded list container class
+  item: string; // Individual style item class
+  itemSelected: string; // Selected item class
   itemHideLabel: string; // No-label utility class
-  dark: string;          // Dark theme class
-  light: string;         // Light theme class
+  dark: string; // Dark theme class
+  light: string; // Light theme class
 }
 ```
 

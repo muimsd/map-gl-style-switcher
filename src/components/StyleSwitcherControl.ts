@@ -47,6 +47,8 @@ export class StyleSwitcherControl implements IControl {
   private _classNames: Required<StyleSwitcherClassNames>;
   private _mediaQuery: MediaQueryList | null = null;
   private _mediaQueryHandler: (() => void) | null = null;
+  private _focusedIndex: number = -1;
+  private _suppressFocusExpand: boolean = false;
 
   constructor(options: StyleSwitcherControlOptions) {
     // Ensure at least one of showLabels or showImages is true
@@ -93,7 +95,7 @@ export class StyleSwitcherControl implements IControl {
     this._container = document.createElement('div');
     this._container.className = this._classNames.container;
     this._container.tabIndex = 0;
-    this._container.setAttribute('role', 'button');
+    this._container.setAttribute('role', 'listbox');
     this._container.setAttribute('aria-label', 'Style switcher');
     this._container.setAttribute('aria-expanded', 'false');
 
@@ -118,8 +120,15 @@ export class StyleSwitcherControl implements IControl {
     this._container.addEventListener('mouseleave', () =>
       this._setExpanded(false)
     );
-    this._container.addEventListener('focus', () => this._setExpanded(true));
+    this._container.addEventListener('focus', () => {
+      if (this._suppressFocusExpand) {
+        this._suppressFocusExpand = false;
+        return;
+      }
+      this._setExpanded(true);
+    });
     this._container.addEventListener('blur', () => this._setExpanded(false));
+    this._container.addEventListener('keydown', e => this._handleKeyDown(e));
 
     this._render();
     return this._container;
@@ -179,8 +188,71 @@ export class StyleSwitcherControl implements IControl {
     if (this._expanded === expanded) return;
     this._expanded = expanded;
     this._container?.setAttribute('aria-expanded', expanded.toString());
+    if (!expanded) {
+      this._focusedIndex = -1;
+    }
     this._render();
     this._applyTheme();
+  }
+
+  private _handleKeyDown(e: KeyboardEvent) {
+    if (!this._expanded) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        this._setExpanded(true);
+        this._focusedIndex = 0;
+        this._updateFocus();
+      }
+      return;
+    }
+
+    const styles = this._options.styles;
+    if (!styles.length) return;
+
+    switch (e.key) {
+      case 'ArrowDown': {
+        e.preventDefault();
+        this._focusedIndex = Math.min(
+          this._focusedIndex + 1,
+          styles.length - 1
+        );
+        this._updateFocus();
+        break;
+      }
+      case 'ArrowUp': {
+        e.preventDefault();
+        this._focusedIndex = Math.max(this._focusedIndex - 1, 0);
+        this._updateFocus();
+        break;
+      }
+      case 'Enter':
+      case ' ': {
+        e.preventDefault();
+        if (this._focusedIndex >= 0 && this._focusedIndex < styles.length) {
+          this._handleStyleChange(styles[this._focusedIndex]);
+        }
+        break;
+      }
+      case 'Escape': {
+        e.preventDefault();
+        this._suppressFocusExpand = true;
+        this._setExpanded(false);
+        this._container?.focus();
+        break;
+      }
+    }
+  }
+
+  private _updateFocus() {
+    if (!this._container) return;
+    const list = this._container.querySelector('.' + this._classNames.list);
+    if (!list) return;
+    const items = list.querySelectorAll('[role="option"]');
+    items.forEach((item, i) => {
+      if (i === this._focusedIndex) {
+        (item as HTMLElement).focus();
+      }
+    });
   }
 
   private _handleStyleChange(style: StyleItem) {
@@ -209,6 +281,8 @@ export class StyleSwitcherControl implements IControl {
       const list = document.createElement('div');
       list.className = this._classNames.list;
       list.style.display = 'flex';
+      list.style.maxHeight = this._options.maxHeight + 'px';
+      list.style.animationDuration = this._options.animationDuration + 'ms';
 
       for (const style of this._options.styles) {
         const item = this._createStyleItem(
@@ -236,6 +310,7 @@ export class StyleSwitcherControl implements IControl {
     div.setAttribute('role', 'option');
     div.setAttribute('aria-selected', selected.toString());
     div.setAttribute('title', style.description || style.name);
+    div.tabIndex = 0;
 
     // Image
     if (this._options.showImages !== false) {

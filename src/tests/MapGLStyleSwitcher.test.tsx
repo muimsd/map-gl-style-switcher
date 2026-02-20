@@ -533,10 +533,7 @@ describe('MapGLStyleSwitcher', () => {
       const secondCallback = jest.fn();
 
       const { rerender } = render(
-        <MapGLStyleSwitcher
-          styles={mockStyles}
-          onStyleChange={firstCallback}
-        />
+        <MapGLStyleSwitcher styles={mockStyles} onStyleChange={firstCallback} />
       );
 
       // Clear call counts recorded during initial mount

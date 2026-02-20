@@ -193,3 +193,82 @@
   .style-switcher-list::-webkit-scrollbar-thumb {
   background: #555;
 }
+
+/* ========================================
+   Outlined design variant
+   ======================================== */
+
+/* Container: transparent background, visible border, no box-shadow */
+.maplibregl-ctrl.style-switcher.style-switcher-outlined,
+.mapboxgl-ctrl.style-switcher.style-switcher-outlined {
+  background: transparent;
+  box-shadow: none;
+  border: 1.5px solid #ccc;
+}
+
+/* Items: border on each item, no background fill */
+.style-switcher-outlined .style-switcher-item {
+  background: transparent;
+  border: 1.5px solid #ddd;
+  border-radius: 4px;
+}
+
+.style-switcher-outlined .style-switcher-item:hover {
+  background: transparent;
+  border-color: #999;
+  transform: none;
+}
+
+/* Selected item: stronger border, no background fill */
+.style-switcher-outlined .style-switcher-item.selected {
+  background: transparent;
+  border-color: #0066cc;
+  border-width: 1.5px;
+}
+
+/* Images: border style matching the outlined aesthetic */
+.style-switcher-outlined .style-switcher-item img {
+  border: 1.5px solid #ccc;
+  border-radius: 3px;
+  background: transparent;
+}
+
+/* Dark + outlined combo: lighter borders for contrast */
+.maplibregl-ctrl.style-switcher.style-switcher-dark.style-switcher-outlined,
+.mapboxgl-ctrl.style-switcher.style-switcher-dark.style-switcher-outlined {
+  background: transparent;
+  border-color: #555;
+}
+
+.style-switcher-dark.style-switcher-outlined .style-switcher-item {
+  border-color: #555;
+}
+
+.style-switcher-dark.style-switcher-outlined .style-switcher-item:hover {
+  background: transparent;
+  border-color: #888;
+}
+
+.style-switcher-dark.style-switcher-outlined .style-switcher-item.selected {
+  background: transparent;
+  border-color: #6699cc;
+}
+
+.style-switcher-dark.style-switcher-outlined .style-switcher-item img {
+  border-color: #555;
+  background: transparent;
+}
+
+/* Scrollbar: subtle styling for outlined variant */
+.style-switcher-outlined .style-switcher-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.style-switcher-outlined .style-switcher-list::-webkit-scrollbar-thumb {
+  background: #ccc;
+}
+
+.style-switcher-dark.style-switcher-outlined
+  .style-switcher-list::-webkit-scrollbar-thumb {
+  background: #555;
+}

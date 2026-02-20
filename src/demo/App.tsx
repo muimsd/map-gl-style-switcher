@@ -93,6 +93,7 @@ export const App = () => {
     const styleSwitcher = new StyleSwitcherControl({
       styles: styles,
       theme: 'auto',
+      design: 'outlined',
       showLabels: true,
       showImages: true,
       activeStyleId: defaultStyle.id,

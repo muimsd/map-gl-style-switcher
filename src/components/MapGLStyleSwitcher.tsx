@@ -10,6 +10,8 @@ export interface MapGLStyleSwitcherProps {
   activeStyleId?: string;
   /** Theme of the control */
   theme?: 'light' | 'dark' | 'auto';
+  /** Design variant of the control */
+  design?: 'default' | 'outlined';
   /** Whether to show style labels */
   showLabels?: boolean;
   /** Whether to show style images */
@@ -31,6 +33,7 @@ export interface MapGLStyleSwitcherProps {
     itemHideLabel: string;
     dark: string;
     light: string;
+    outlined: string;
   }>;
   /** Callback when style is about to change */
   onBeforeStyleChange?: (from: StyleItem, to: StyleItem) => void;
@@ -69,6 +72,7 @@ export const MapGLStyleSwitcher: React.FC<MapGLStyleSwitcherProps> = ({
   styles,
   activeStyleId,
   theme = 'light',
+  design,
   showLabels = true,
   showImages = true,
   position = 'bottom-left',
@@ -103,6 +107,7 @@ export const MapGLStyleSwitcher: React.FC<MapGLStyleSwitcherProps> = ({
         styles,
         activeStyleId,
         theme,
+        design,
         showLabels,
         showImages,
         animationDuration,
@@ -129,6 +134,7 @@ export const MapGLStyleSwitcher: React.FC<MapGLStyleSwitcherProps> = ({
       styles,
       activeStyleId,
       theme,
+      design,
       showLabels,
       showImages,
       animationDuration,
@@ -140,6 +146,7 @@ export const MapGLStyleSwitcher: React.FC<MapGLStyleSwitcherProps> = ({
     styles,
     activeStyleId,
     theme,
+    design,
     showLabels,
     showImages,
     animationDuration,

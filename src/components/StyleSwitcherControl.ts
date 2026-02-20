@@ -25,6 +25,7 @@ export interface StyleSwitcherControlOptions {
   animationDuration?: number;
   maxHeight?: number;
   theme?: 'light' | 'dark' | 'auto';
+  design?: 'default' | 'outlined';
   classNames?: Partial<StyleSwitcherClassNames>;
   rtl?: boolean; // Enable RTL (Right-to-Left) layout
 }
@@ -37,6 +38,7 @@ export interface StyleSwitcherClassNames {
   itemHideLabel: string;
   dark: string;
   light: string;
+  outlined: string;
 }
 
 export class StyleSwitcherControl implements IControl {
@@ -74,6 +76,7 @@ export class StyleSwitcherControl implements IControl {
       animationDuration: 200,
       maxHeight: 300,
       theme: 'light',
+      design: 'default',
       ...options,
     };
     this._activeStyleId = options.activeStyleId || options.styles[0]?.id;
@@ -86,6 +89,7 @@ export class StyleSwitcherControl implements IControl {
       itemHideLabel: 'hide-label',
       dark: 'style-switcher-dark',
       light: 'style-switcher-light',
+      outlined: 'style-switcher-outlined',
       ...options.classNames,
     };
   }
@@ -152,6 +156,15 @@ export class StyleSwitcherControl implements IControl {
       this._container.classList.add(
         isDark ? this._classNames.dark : this._classNames.light
       );
+    }
+    this._applyDesign();
+  }
+
+  private _applyDesign() {
+    if (!this._container) return;
+    this._container.classList.remove(this._classNames.outlined);
+    if (this._options.design === 'outlined') {
+      this._container.classList.add(this._classNames.outlined);
     }
   }
 

@@ -42,7 +42,6 @@
   flex-direction: column;
   gap: 4px;
   padding: 4px 0px;
-  max-height: 300px;
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -150,7 +149,8 @@
 
 /* Animation for expand/collapse */
 .style-switcher-list {
-  animation: fadeIn 0.2s ease-in-out;
+  animation-name: fadeIn;
+  animation-timing-function: ease-in-out;
 }
 
 @keyframes fadeIn {

@@ -1,6 +1,6 @@
 {
   "name": "map-gl-style-switcher",
-  "version": "0.9.3",
+  "version": "0.10.0",
   "description": "A customizable style switcher control for Mapbox GL JS and MapLibre GL JS",
   "type": "module",
   "main": "dist/index.js",
@@ -100,9 +100,19 @@
     "postversion": "git push && git push --tags",
     "prepare": "husky"
   },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "prettier --write",
+      "eslint --max-warnings 0"
+    ],
+    "*.{css,md}": [
+      "prettier --write"
+    ]
+  },
   "devDependencies": {
     "@eslint/js": "^9.25.0",
     "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^12.1.2",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
@@ -118,6 +128,7 @@
     "husky": "^9.1.7",
     "jest": "^30.2.0",
     "jest-environment-jsdom": "^30.2.0",
+    "lint-staged": "^16.2.7",
     "maplibre-gl": "^5.6.0",
     "prettier": "^3.4.2",
     "react": "^19.1.0",

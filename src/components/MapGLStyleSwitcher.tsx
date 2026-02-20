@@ -3,7 +3,7 @@ import { useControl } from 'react-map-gl/maplibre';
 import { StyleSwitcherControl } from './StyleSwitcherControl';
 import type { StyleItem } from './StyleSwitcherControl';
 
-interface MapGLStyleSwitcherProps {
+export interface MapGLStyleSwitcherProps {
   /** Array of map styles to choose from */
   styles: StyleItem[];
   /** Currently active style ID */

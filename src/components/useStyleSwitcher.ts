@@ -5,7 +5,7 @@ import type { StyleSwitcherControlOptions } from './StyleSwitcherControl';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type MapInstance = any; // MapLibre GL or Mapbox GL Map instance
 
-interface UseStyleSwitcherOptions extends StyleSwitcherControlOptions {
+export interface UseStyleSwitcherOptions extends StyleSwitcherControlOptions {
   /** Position of the control on the map */
   position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 }

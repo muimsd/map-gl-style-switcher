@@ -10,7 +10,7 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
   },
   "dependencies": {
-    "map-gl-style-switcher": "^0.9.0",
+    "map-gl-style-switcher": "latest",
     "maplibre-gl": "^5.0.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"

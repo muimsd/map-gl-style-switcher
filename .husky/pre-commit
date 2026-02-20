@@ -1,1 +1,1 @@
-npm run validate
+npx lint-staged

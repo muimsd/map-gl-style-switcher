@@ -172,7 +172,7 @@ describe('StyleSwitcherControl', () => {
     });
 
     it('should have proper ARIA attributes', () => {
-      expect(container.getAttribute('role')).toBe('button');
+      expect(container.getAttribute('role')).toBe('listbox');
       expect(container.getAttribute('aria-label')).toBe('Style switcher');
       expect(container.getAttribute('aria-expanded')).toBe('false');
       expect(container.getAttribute('tabindex')).toBe('0');
@@ -240,6 +240,35 @@ describe('StyleSwitcherControl', () => {
       expect(() => {
         container.dispatchEvent(new Event('mouseleave'));
       }).not.toThrow();
+    });
+
+    it('should apply maxHeight and animationDuration to list element', () => {
+      container.dispatchEvent(new Event('mouseenter'));
+      const list = container.querySelector(
+        '.style-switcher-list'
+      ) as HTMLElement;
+      expect(list).toBeTruthy();
+      expect(list.style.maxHeight).toBe('300px');
+      expect(list.style.animationDuration).toBe('200ms');
+    });
+
+    it('should apply custom maxHeight and animationDuration', () => {
+      const customControl = new StyleSwitcherControl({
+        styles: mockStyles,
+        maxHeight: 500,
+        animationDuration: 400,
+      });
+      const customContainer = customControl.onAdd(mockMap);
+      document.body.appendChild(customContainer);
+
+      customContainer.dispatchEvent(new Event('mouseenter'));
+      const list = customContainer.querySelector(
+        '.style-switcher-list'
+      ) as HTMLElement;
+      expect(list.style.maxHeight).toBe('500px');
+      expect(list.style.animationDuration).toBe('400ms');
+
+      customControl.onRemove();
     });
 
     it('should render style items when expanded', () => {
@@ -559,7 +588,99 @@ describe('StyleSwitcherControl', () => {
 
     it('should have proper keyboard navigation support', () => {
       expect(container.getAttribute('tabindex')).toBe('0');
-      expect(container.getAttribute('role')).toBe('button');
+      expect(container.getAttribute('role')).toBe('listbox');
+    });
+
+    it('should expand on Enter key when collapsed', () => {
+      expect(container.getAttribute('aria-expanded')).toBe('false');
+      container.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })
+      );
+      expect(container.getAttribute('aria-expanded')).toBe('true');
+    });
+
+    it('should expand on Space key when collapsed', () => {
+      expect(container.getAttribute('aria-expanded')).toBe('false');
+      container.dispatchEvent(
+        new KeyboardEvent('keydown', { key: ' ', bubbles: true })
+      );
+      expect(container.getAttribute('aria-expanded')).toBe('true');
+    });
+
+    it('should navigate items with ArrowDown and ArrowUp keys', () => {
+      // Expand first
+      container.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })
+      );
+      expect(container.getAttribute('aria-expanded')).toBe('true');
+
+      // ArrowDown should focus next item
+      container.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true })
+      );
+      const list = container.querySelector('.style-switcher-list');
+      const items = list?.querySelectorAll('[role="option"]');
+      expect(items).toBeTruthy();
+      expect(items!.length).toBe(mockStyles.length);
+
+      // ArrowUp should focus previous item
+      container.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true })
+      );
+      // Should not go below index 0
+      expect(container.getAttribute('aria-expanded')).toBe('true');
+    });
+
+    it('should select a style with Enter when expanded and item focused', () => {
+      const onAfterStyleChange = jest.fn();
+      const kbControl = new StyleSwitcherControl({
+        styles: mockStyles,
+        onAfterStyleChange,
+      });
+      const kbContainer = kbControl.onAdd(mockMap);
+      document.body.appendChild(kbContainer);
+
+      // Expand
+      kbContainer.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })
+      );
+      // Move to second item
+      kbContainer.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true })
+      );
+      // Select it
+      kbContainer.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })
+      );
+
+      expect(onAfterStyleChange).toHaveBeenCalledWith(
+        mockStyles[0],
+        mockStyles[1]
+      );
+
+      kbControl.onRemove();
+    });
+
+    it('should close on Escape key', () => {
+      // Expand first
+      container.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })
+      );
+      expect(container.getAttribute('aria-expanded')).toBe('true');
+
+      // Escape should collapse
+      container.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })
+      );
+      expect(container.getAttribute('aria-expanded')).toBe('false');
+    });
+
+    it('should have tabIndex on style items', () => {
+      container.dispatchEvent(new Event('mouseenter'));
+      const items = container.querySelectorAll('[role="option"]');
+      items.forEach(item => {
+        expect((item as HTMLElement).tabIndex).toBe(0);
+      });
     });
 
     it('should update aria-expanded correctly', () => {

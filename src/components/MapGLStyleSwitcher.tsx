@@ -136,7 +136,17 @@ export const MapGLStyleSwitcher: React.FC<MapGLStyleSwitcherProps> = ({
       rtl,
       classNames,
     });
-  }, [styles, activeStyleId, theme, showLabels, showImages, animationDuration, maxHeight, rtl, classNames]);
+  }, [
+    styles,
+    activeStyleId,
+    theme,
+    showLabels,
+    showImages,
+    animationDuration,
+    maxHeight,
+    rtl,
+    classNames,
+  ]);
 
   return null;
 };

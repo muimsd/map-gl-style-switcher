@@ -76,7 +76,7 @@ export function useStyleSwitcher(
         controlRef.current = null;
       }
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [map, position, optionsKey]);
 
   return controlRef.current;

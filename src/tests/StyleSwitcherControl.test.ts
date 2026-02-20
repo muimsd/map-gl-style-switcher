@@ -340,7 +340,9 @@ describe('StyleSwitcherControl', () => {
     });
 
     it('should handle style change without callbacks defined', async () => {
-      const controlNoCallbacks = new StyleSwitcherControl({ styles: mockStyles });
+      const controlNoCallbacks = new StyleSwitcherControl({
+        styles: mockStyles,
+      });
       const containerNoCallbacks = controlNoCallbacks.onAdd(mockMap);
       document.body.appendChild(containerNoCallbacks);
 

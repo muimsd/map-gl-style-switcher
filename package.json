@@ -1,6 +1,6 @@
 {
   "name": "map-gl-style-switcher",
-  "version": "0.9.2",
+  "version": "0.9.3",
   "description": "A customizable style switcher control for Mapbox GL JS and MapLibre GL JS",
   "type": "module",
   "main": "dist/index.js",
@@ -9,18 +9,15 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.js"
+      "import": "./dist/index.js"
     },
     "./react": {
       "types": "./dist/react.d.ts",
-      "import": "./dist/react.js",
-      "require": "./dist/react.js"
+      "import": "./dist/react.js"
     },
     "./react-map-gl": {
       "types": "./dist/react-map-gl.d.ts",
-      "import": "./dist/react-map-gl.js",
-      "require": "./dist/react-map-gl.js"
+      "import": "./dist/react-map-gl.js"
     },
     "./dist/map-gl-style-switcher.css": "./dist/map-gl-style-switcher.css"
   },

@@ -327,10 +327,15 @@ export class StyleSwitcherControl implements IControl {
   private _handleStyleChange(style: StyleItem) {
     if (style.id === this._activeStyleId) return;
     const from = this._options.styles.find(s => s.id === this._activeStyleId);
-    if (from) this._options.onBeforeStyleChange?.(from, style);
+    // Defensive: with the constructor and updateOptions invariants,
+    // `from` should always be defined whenever this method is called via
+    // a click on a rendered item. Guard once to keep callers safe from
+    // any future regression that breaks the invariant.
+    if (!from) return;
+    this._options.onBeforeStyleChange?.(from, style);
     this._activeStyleId = style.id;
     this._render();
-    if (from) this._options.onAfterStyleChange?.(from, style);
+    this._options.onAfterStyleChange?.(from, style);
   }
 
   private _render() {

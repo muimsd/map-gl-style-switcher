@@ -207,6 +207,7 @@ interface StyleSwitcherControlOptions {
   animationDuration?: number; // Expand animation in ms (default: 200)
   maxHeight?: number; // Max list height in px (default: 300)
   theme?: 'light' | 'dark' | 'auto'; // UI theme (default: 'light')
+  design?: 'default' | 'outlined'; // Visual design variant (default: 'default')
   classNames?: Partial<StyleSwitcherClassNames>; // Custom CSS class overrides
   rtl?: boolean; // RTL layout (default: false)
 }
@@ -227,6 +228,7 @@ interface StyleSwitcherClassNames {
   itemHideLabel: string; // No-label utility class
   dark: string; // Dark theme class
   light: string; // Light theme class
+  outlined: string; // Outlined design variant class (applied when design is 'outlined')
 }
 ```
 
@@ -238,6 +240,9 @@ interface StyleSwitcherClassNames {
   - `'light'`: Light colour scheme (default)
   - `'dark'`: Dark colour scheme
   - `'auto'`: Follows the OS preference and updates automatically when the user switches between light and dark mode
+- **`design`**:
+  - `'default'`: Solid container with shadow (default)
+  - `'outlined'`: Translucent backdrop with a visible border on the container and on each item — ideal when you want a lighter chrome over a busy map. The class applied for this variant is configurable via `classNames.outlined`.
 - **`rtl`**: Enables right-to-left layout for Arabic/Hebrew interfaces.
 
 ### Imperative updates — `updateOptions()`
@@ -272,6 +277,7 @@ const control = new StyleSwitcherControl({
     itemHideLabel: 'my-style-item-hide-label',
     dark: 'my-style-dark',
     light: 'my-style-light',
+    outlined: 'my-style-outlined',
   },
 });
 ```

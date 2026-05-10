@@ -881,7 +881,7 @@ describe('StyleSwitcherControl', () => {
       expect(container.getAttribute('dir')).toBeNull();
     });
 
-    it('should not pass undefined as `from` to callbacks when previous active is stale', () => {
+    it('should produce valid `from` after styles update removes the previous active id', () => {
       const onBeforeStyleChange = jest.fn();
       const onAfterStyleChange = jest.fn();
       const ctrl = new StyleSwitcherControl({

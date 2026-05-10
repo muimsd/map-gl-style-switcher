@@ -183,39 +183,9 @@ export class StyleSwitcherControl implements IControl {
       this._classNames = { ...this._classNames, ...updates.classNames };
     }
     Object.assign(this._options, updates);
-
-    // Resolve activeStyleId against the (possibly updated) styles list.
-    // Validate against this._options.styles so a combined update of
-    // { styles, activeStyleId } is checked against the new list.
-    if ('activeStyleId' in updates && updates.activeStyleId !== undefined) {
-      if (this._options.styles.some(s => s.id === updates.activeStyleId)) {
-        this._activeStyleId = updates.activeStyleId;
-      } else if ('styles' in updates) {
-        // Combined update: previous selection may no longer be valid in the
-        // new list either, so fall back to the first style of the new list
-        // (constructor-style behavior).
-        console.warn(
-          `StyleSwitcherControl: activeStyleId "${updates.activeStyleId}" does not match any style. Using first style instead.`
-        );
-        this._activeStyleId = this._options.styles[0]?.id;
-      } else {
-        // Styles list unchanged: keep the previous selection (still valid).
-        console.warn(
-          `StyleSwitcherControl: activeStyleId "${updates.activeStyleId}" does not match any style. Keeping previous selection.`
-        );
-      }
-    } else if (
-      'styles' in updates &&
-      (this._activeStyleId === undefined ||
-        !this._options.styles.some(s => s.id === this._activeStyleId))
-    ) {
-      // Styles list changed without an explicit activeStyleId, and the current
-      // active id is no longer present — fall back to the first style.
-      this._activeStyleId = this._options.styles[0]?.id;
-    }
+    this._resolveActiveStyleIdAfterUpdate(updates);
 
     if (this._container) {
-      // Keep the dir attribute in sync with the rtl option.
       if ('rtl' in updates) {
         if (this._options.rtl) {
           this._container.setAttribute('dir', 'rtl');
@@ -224,6 +194,50 @@ export class StyleSwitcherControl implements IControl {
         }
       }
       this._render();
+    }
+  }
+
+  // Resolves _activeStyleId against the (possibly updated) styles list.
+  // Validation runs against this._options.styles so a combined update of
+  // { styles, activeStyleId } is checked against the new list.
+  private _resolveActiveStyleIdAfterUpdate(
+    updates: Partial<StyleSwitcherControlOptions>
+  ): void {
+    const stylesChanged = 'styles' in updates;
+    const newActiveId =
+      'activeStyleId' in updates && updates.activeStyleId !== undefined
+        ? updates.activeStyleId
+        : undefined;
+
+    if (newActiveId !== undefined) {
+      if (this._options.styles.some(s => s.id === newActiveId)) {
+        this._activeStyleId = newActiveId;
+        return;
+      }
+      if (stylesChanged) {
+        // Combined update: the previous selection may not be valid in the
+        // new list either, so fall back to the first style (constructor-style).
+        console.warn(
+          `StyleSwitcherControl: activeStyleId "${newActiveId}" does not match any style. Using first style instead.`
+        );
+        this._activeStyleId = this._options.styles[0]?.id;
+        return;
+      }
+      // Styles list unchanged: keep the previous selection (still valid).
+      console.warn(
+        `StyleSwitcherControl: activeStyleId "${newActiveId}" does not match any style. Keeping previous selection.`
+      );
+      return;
+    }
+
+    if (
+      stylesChanged &&
+      (this._activeStyleId === undefined ||
+        !this._options.styles.some(s => s.id === this._activeStyleId))
+    ) {
+      // Styles list changed without an explicit activeStyleId; current active
+      // is no longer present — fall back to the first style.
+      this._activeStyleId = this._options.styles[0]?.id;
     }
   }
 

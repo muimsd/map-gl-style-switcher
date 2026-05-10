@@ -44,7 +44,7 @@ export interface StyleSwitcherClassNames {
 export class StyleSwitcherControl implements IControl {
   private _container: HTMLElement | null = null;
   private _options: StyleSwitcherControlOptions;
-  private _activeStyleId: string;
+  private _activeStyleId: string | undefined;
   private _expanded: boolean = false;
   private _classNames: Required<StyleSwitcherClassNames>;
   private _mediaQuery: MediaQueryList | null = null;
@@ -60,11 +60,15 @@ export class StyleSwitcherControl implements IControl {
       throw new Error('At least one of showLabels or showImages must be true.');
     }
 
-    // Validate activeStyleId if provided
-    if (
-      options.activeStyleId &&
-      !options.styles.find(s => s.id === options.activeStyleId)
-    ) {
+    // Validate activeStyleId if provided; fall back to first style id when
+    // it doesn't match any provided style. Without this fallback the control
+    // would render styles[0] as visually active (via _render's fallback) but
+    // _activeStyleId would still hold the invalid id, causing _handleStyleChange
+    // to invoke onBeforeStyleChange/onAfterStyleChange with `from === undefined`.
+    const isValidActiveId =
+      options.activeStyleId !== undefined &&
+      options.styles.some(s => s.id === options.activeStyleId);
+    if (options.activeStyleId !== undefined && !isValidActiveId) {
       console.warn(
         `StyleSwitcherControl: activeStyleId "${options.activeStyleId}" does not match any style. Using first style instead.`
       );
@@ -79,7 +83,9 @@ export class StyleSwitcherControl implements IControl {
       design: 'default',
       ...options,
     };
-    this._activeStyleId = options.activeStyleId || options.styles[0]?.id;
+    this._activeStyleId = isValidActiveId
+      ? options.activeStyleId
+      : options.styles[0]?.id;
     this._classNames = {
       container:
         'maplibregl-ctrl maplibregl-ctrl-group mapboxgl-ctrl mapboxgl-ctrl-group style-switcher',
@@ -173,15 +179,65 @@ export class StyleSwitcherControl implements IControl {
    * Only the supplied keys are merged; omitted keys are unchanged.
    */
   updateOptions(updates: Partial<StyleSwitcherControlOptions>): void {
-    if ('activeStyleId' in updates && updates.activeStyleId !== undefined) {
-      this._activeStyleId = updates.activeStyleId;
-    }
     if ('classNames' in updates) {
       this._classNames = { ...this._classNames, ...updates.classNames };
     }
     Object.assign(this._options, updates);
+    this._resolveActiveStyleIdAfterUpdate(updates);
+
     if (this._container) {
+      if ('rtl' in updates) {
+        if (this._options.rtl) {
+          this._container.setAttribute('dir', 'rtl');
+        } else {
+          this._container.removeAttribute('dir');
+        }
+      }
       this._render();
+    }
+  }
+
+  // Resolves _activeStyleId against the (possibly updated) styles list.
+  // Validation runs against this._options.styles so a combined update of
+  // { styles, activeStyleId } is checked against the new list.
+  private _resolveActiveStyleIdAfterUpdate(
+    updates: Partial<StyleSwitcherControlOptions>
+  ): void {
+    const stylesChanged = 'styles' in updates;
+    const newActiveId =
+      'activeStyleId' in updates && updates.activeStyleId !== undefined
+        ? updates.activeStyleId
+        : undefined;
+
+    if (newActiveId !== undefined) {
+      if (this._options.styles.some(s => s.id === newActiveId)) {
+        this._activeStyleId = newActiveId;
+        return;
+      }
+      if (stylesChanged) {
+        // Combined update: the previous selection may not be valid in the
+        // new list either, so fall back to the first style (constructor-style).
+        console.warn(
+          `StyleSwitcherControl: activeStyleId "${newActiveId}" does not match any style. Using first style instead.`
+        );
+        this._activeStyleId = this._options.styles[0]?.id;
+        return;
+      }
+      // Styles list unchanged: keep the previous selection (still valid).
+      console.warn(
+        `StyleSwitcherControl: activeStyleId "${newActiveId}" does not match any style. Keeping previous selection.`
+      );
+      return;
+    }
+
+    if (
+      stylesChanged &&
+      (this._activeStyleId === undefined ||
+        !this._options.styles.some(s => s.id === this._activeStyleId))
+    ) {
+      // Styles list changed without an explicit activeStyleId; current active
+      // is no longer present — fall back to the first style.
+      this._activeStyleId = this._options.styles[0]?.id;
     }
   }
 
@@ -270,13 +326,16 @@ export class StyleSwitcherControl implements IControl {
 
   private _handleStyleChange(style: StyleItem) {
     if (style.id === this._activeStyleId) return;
-    const from = this._options.styles.find(s => s.id === this._activeStyleId)!;
-    if (this._options.onBeforeStyleChange)
-      this._options.onBeforeStyleChange(from, style);
+    const from = this._options.styles.find(s => s.id === this._activeStyleId);
+    // Defensive: with the constructor and updateOptions invariants,
+    // `from` should always be defined whenever this method is called via
+    // a click on a rendered item. Guard once to keep callers safe from
+    // any future regression that breaks the invariant.
+    if (!from) return;
+    this._options.onBeforeStyleChange?.(from, style);
     this._activeStyleId = style.id;
     this._render();
-    if (this._options.onAfterStyleChange)
-      this._options.onAfterStyleChange(from, style);
+    this._options.onAfterStyleChange?.(from, style);
   }
 
   private _render() {

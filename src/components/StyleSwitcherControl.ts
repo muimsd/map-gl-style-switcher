@@ -190,20 +190,27 @@ export class StyleSwitcherControl implements IControl {
     if ('activeStyleId' in updates && updates.activeStyleId !== undefined) {
       if (this._options.styles.some(s => s.id === updates.activeStyleId)) {
         this._activeStyleId = updates.activeStyleId;
+      } else if ('styles' in updates) {
+        // Combined update: previous selection may no longer be valid in the
+        // new list either, so fall back to the first style of the new list
+        // (constructor-style behavior).
+        console.warn(
+          `StyleSwitcherControl: activeStyleId "${updates.activeStyleId}" does not match any style. Using first style instead.`
+        );
+        this._activeStyleId = this._options.styles[0]?.id;
       } else {
+        // Styles list unchanged: keep the previous selection (still valid).
         console.warn(
           `StyleSwitcherControl: activeStyleId "${updates.activeStyleId}" does not match any style. Keeping previous selection.`
         );
       }
-    }
-    // If the styles list changed and the current active id is no longer
-    // present, fall back to the first available style id so subsequent
-    // change events have a valid `from` reference.
-    if (
+    } else if (
       'styles' in updates &&
       (this._activeStyleId === undefined ||
         !this._options.styles.some(s => s.id === this._activeStyleId))
     ) {
+      // Styles list changed without an explicit activeStyleId, and the current
+      // active id is no longer present — fall back to the first style.
       this._activeStyleId = this._options.styles[0]?.id;
     }
 
@@ -306,8 +313,6 @@ export class StyleSwitcherControl implements IControl {
   private _handleStyleChange(style: StyleItem) {
     if (style.id === this._activeStyleId) return;
     const from = this._options.styles.find(s => s.id === this._activeStyleId);
-    // Skip callbacks if there is no valid previous style — callers expect
-    // both arguments to be defined StyleItems.
     if (from) this._options.onBeforeStyleChange?.(from, style);
     this._activeStyleId = style.id;
     this._render();

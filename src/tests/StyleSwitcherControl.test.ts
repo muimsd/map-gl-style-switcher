@@ -813,6 +813,150 @@ describe('StyleSwitcherControl', () => {
         control.updateOptions({ styles: [] });
       }).not.toThrow();
     });
+
+    it('should warn and keep previous selection when activeStyleId is invalid', () => {
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+
+      control.updateOptions({ activeStyleId: 'does-not-exist' });
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Keeping previous selection.')
+      );
+      // Visible selection should remain on the original 'streets' style.
+      const activeItem = container.querySelector('[aria-selected="true"]');
+      expect(activeItem?.querySelector('span')?.textContent).toBe('Streets');
+
+      consoleSpy.mockRestore();
+    });
+
+    it('should fall back to first new style when both styles and an invalid activeStyleId are provided', () => {
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+
+      const newStyles: StyleItem[] = [
+        { id: 'a', name: 'A', image: 'a.png', styleUrl: 'urlA' },
+        { id: 'b', name: 'B', image: 'b.png', styleUrl: 'urlB' },
+      ];
+      control.updateOptions({ styles: newStyles, activeStyleId: 'nope' });
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Using first style instead.')
+      );
+      // Should display the first style of the new list.
+      const activeItem = container.querySelector('[aria-selected="true"]');
+      expect(activeItem?.querySelector('span')?.textContent).toBe('A');
+
+      consoleSpy.mockRestore();
+    });
+
+    it('should fall back to first style when styles list replaces and previous active is removed', () => {
+      const newStyles: StyleItem[] = [
+        { id: 'x', name: 'X', image: 'x.png', styleUrl: 'urlX' },
+        { id: 'y', name: 'Y', image: 'y.png', styleUrl: 'urlY' },
+      ];
+      control.updateOptions({ styles: newStyles });
+
+      const activeItem = container.querySelector('[aria-selected="true"]');
+      expect(activeItem?.querySelector('span')?.textContent).toBe('X');
+    });
+
+    it('should keep current selection when styles list changes but contains the active id', () => {
+      // 'streets' is the original active id; new list still includes it.
+      const newStyles: StyleItem[] = [
+        { id: 'streets', name: 'Streets', image: 's.png', styleUrl: 'urlS' },
+        { id: 'extra', name: 'Extra', image: 'e.png', styleUrl: 'urlE' },
+      ];
+      control.updateOptions({ styles: newStyles });
+
+      const activeItem = container.querySelector('[aria-selected="true"]');
+      expect(activeItem?.querySelector('span')?.textContent).toBe('Streets');
+    });
+
+    it('should sync the dir attribute when rtl toggles', () => {
+      expect(container.getAttribute('dir')).toBeNull();
+
+      control.updateOptions({ rtl: true });
+      expect(container.getAttribute('dir')).toBe('rtl');
+
+      control.updateOptions({ rtl: false });
+      expect(container.getAttribute('dir')).toBeNull();
+    });
+
+    it('should not pass undefined as `from` to callbacks when previous active is stale', () => {
+      const onBeforeStyleChange = jest.fn();
+      const onAfterStyleChange = jest.fn();
+      const ctrl = new StyleSwitcherControl({
+        styles: mockStyles,
+        activeStyleId: 'streets',
+        onBeforeStyleChange,
+        onAfterStyleChange,
+      });
+      const ctrlContainer = ctrl.onAdd(mockMap);
+      document.body.appendChild(ctrlContainer);
+
+      // Replace styles so the old active id no longer exists.
+      const replacement: StyleItem[] = [
+        { id: 'one', name: 'One', image: '1.png', styleUrl: 'url1' },
+        { id: 'two', name: 'Two', image: '2.png', styleUrl: 'url2' },
+      ];
+      ctrl.updateOptions({ styles: replacement });
+
+      // Now click the second item.
+      ctrlContainer.dispatchEvent(new Event('mouseenter'));
+      const list = ctrlContainer.querySelector('.style-switcher-list');
+      const items = list?.querySelectorAll('[role="option"]');
+      (items?.[1] as HTMLElement).click();
+
+      // Callbacks should fire with a defined `from` (the new fallback first style).
+      expect(onBeforeStyleChange).toHaveBeenCalledWith(
+        replacement[0],
+        replacement[1]
+      );
+      expect(onAfterStyleChange).toHaveBeenCalledWith(
+        replacement[0],
+        replacement[1]
+      );
+
+      ctrl.onRemove();
+    });
+  });
+
+  describe('Constructor activeStyleId fallback', () => {
+    it('should set _activeStyleId to first style when activeStyleId is invalid (callbacks see valid `from`)', () => {
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+      const onBeforeStyleChange = jest.fn();
+      const onAfterStyleChange = jest.fn();
+
+      const control = new StyleSwitcherControl({
+        styles: mockStyles,
+        activeStyleId: 'unknown',
+        onBeforeStyleChange,
+        onAfterStyleChange,
+      });
+      const container = control.onAdd(mockMap);
+      document.body.appendChild(container);
+
+      // The visually-selected item should be the first style.
+      const activeItem = container.querySelector('[aria-selected="true"]');
+      expect(activeItem?.querySelector('span')?.textContent).toBe('Streets');
+
+      // Now click another style; `from` must be the first style (Streets), not undefined.
+      container.dispatchEvent(new Event('mouseenter'));
+      const list = container.querySelector('.style-switcher-list');
+      const items = list?.querySelectorAll('[role="option"]');
+      (items?.[1] as HTMLElement).click();
+
+      expect(onBeforeStyleChange).toHaveBeenCalledWith(
+        mockStyles[0],
+        mockStyles[1]
+      );
+      expect(onAfterStyleChange).toHaveBeenCalledWith(
+        mockStyles[0],
+        mockStyles[1]
+      );
+
+      consoleSpy.mockRestore();
+      control.onRemove();
+    });
   });
 
   describe('Empty styles', () => {

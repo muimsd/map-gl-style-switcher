@@ -198,10 +198,13 @@
    Outlined design variant
    ======================================== */
 
-/* Container: transparent background, visible border, no box-shadow */
+/* Container: translucent backdrop so items remain legible over the map,
+   while keeping the visible border and no box-shadow that defines this variant. */
 .maplibregl-ctrl.style-switcher.style-switcher-outlined,
 .mapboxgl-ctrl.style-switcher.style-switcher-outlined {
-  background: transparent;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   box-shadow: none;
   border: 1.5px solid #ccc;
 }
@@ -233,10 +236,12 @@
   background: transparent;
 }
 
-/* Dark + outlined combo: lighter borders for contrast */
+/* Dark + outlined combo: translucent dark backdrop for legibility, lighter borders for contrast */
 .maplibregl-ctrl.style-switcher.style-switcher-dark.style-switcher-outlined,
 .mapboxgl-ctrl.style-switcher.style-switcher-dark.style-switcher-outlined {
-  background: transparent;
+  background: rgba(42, 42, 42, 0.9);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   border-color: #555;
 }
 

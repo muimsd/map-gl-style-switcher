@@ -7,8 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+The control was rewritten. Exports, option names and default class names are unchanged. The DOM structure and some behaviour changed, as listed below.
+
+### Performance
+
+- Bundled thumbnails reduced from 12.49 MB to 31 KB in total: 3200×1780 screenshots became 96×96 PNGs (5–8 KB each) under the same URLs.
+- The DOM is built once instead of on every hover, so thumbnails are never re-created. List thumbnails load on first open, and re-renders with identical `styles` or `classNames` do nothing.
+
+### Changed
+
+- **DOM and ARIA:** now a WAI-ARIA select-only combobox. `role="combobox"`, `tabindex` and `aria-expanded` moved from the container to a trigger element, and `role="listbox"` moved to the list. The list stays in the DOM (`hidden`) while collapsed, and the collapsed item is no longer `role="option"`. Code that queries these attributes needs updating.
+- Focusing the control with the keyboard no longer opens it; press `Enter`, `Space` or an arrow key. Selecting with the keyboard now closes the list.
+- `updateOptions({ classNames })` replaces the previous custom class names instead of merging with them.
+- `updateOptions` now warns and keeps the previous values if both `showLabels` and `showImages` would end up `false`.
+- `useStyleSwitcher` updates the existing control when options change instead of recreating it, and returns the control once it has been added.
+- CSS: colours are now `--style-switcher-*` custom properties, the keyframes are renamed to `style-switcher-fade-in`, and hovering no longer shifts items by 1px.
+
+### Added
+
+- Touch support: tap the trigger to toggle, tap outside to close; the list closes after a selection.
+- `Home` and `End` keys, and a new `itemActive` class name (default `active`) for the keyboard-highlighted option.
+- `prefers-reduced-motion` support.
+
 ### Fixed
 
+- Keyboard navigation in real browsers: moving to an option blurred the container, which collapsed and destroyed the list.
+- Options set to `undefined` overwrote defaults. This affected every `MapGLStyleSwitcher` that did not set `maxHeight` or `animationDuration`, which lost both (`"undefinedpx"`).
+- `useStyleSwitcher` called stale callbacks, because callbacks were left out of its change detection.
+- `MapGLStyleSwitcher` and `useStyleSwitcher` re-sent an unchanged `activeStyleId` on every other prop change, undoing the style the user had picked.
+- `MapGLStyleSwitcher` updated an orphan control under React 19 StrictMode, so prop changes never reached the map.
+- `updateOptions({ theme: 'auto' })` after mount did not follow OS theme changes.
+- `updateOptions({ classNames: { container } })` was ignored, and class names containing spaces threw.
+- Items shifted by 1px when selected, because of mismatched border widths.
+- README hook example never added the control, because it passed `ref.current`.
 - `activeStyleId` validation: invalid ids in the constructor and `updateOptions` now actually fall back to the first style as the warning message claims; previously the invalid id was silently retained, causing `onBeforeStyleChange` / `onAfterStyleChange` to be invoked with `from === undefined`.
 - `_handleStyleChange` no longer relies on a non-null assertion (`!`) for the previous style; the lookup is now defensive and consistent with the new invariants.
 - `updateOptions` now syncs the `dir` attribute on the container when the `rtl` option toggles (previously only set during `onAdd`).

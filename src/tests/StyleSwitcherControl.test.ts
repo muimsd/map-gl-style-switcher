@@ -1,972 +1,832 @@
 import { StyleSwitcherControl } from '../components/StyleSwitcherControl';
-import type { StyleItem } from '../components/StyleSwitcherControl';
+import type {
+  StyleItem,
+  StyleSwitcherControlOptions,
+} from '../components/StyleSwitcherControl';
 
-// Mock Image constructor for image loading tests
-class MockImage {
-  onload: (() => void) | null = null;
-  onerror: (() => void) | null = null;
-  src: string = '';
+const styles: StyleItem[] = [
+  {
+    id: 'streets',
+    name: 'Streets',
+    image: 'https://example.com/streets.png',
+    styleUrl: 'mapbox://styles/mapbox/streets-v11',
+  },
+  {
+    id: 'satellite',
+    name: 'Satellite',
+    image: 'https://example.com/satellite.png',
+    styleUrl: 'mapbox://styles/mapbox/satellite-v9',
+  },
+  {
+    id: 'dark',
+    name: 'Dark',
+    image: 'https://example.com/dark.png',
+    styleUrl: 'mapbox://styles/mapbox/dark-v10',
+    description: 'Dark theme style',
+  },
+];
 
-  constructor() {
-    // Simulate successful image loading after a short delay
-    setTimeout(() => {
-      if (this.onload) {
-        this.onload();
-      }
-    }, 10);
-  }
+const added: StyleSwitcherControl[] = [];
+
+function setup(options: Partial<StyleSwitcherControlOptions> = {}) {
+  const control = new StyleSwitcherControl({ styles, ...options });
+  const container = control.onAdd({});
+  document.body.appendChild(container);
+  added.push(control);
+
+  const trigger = () =>
+    container.querySelector('[role="combobox"]') as HTMLElement;
+  const list = () => container.querySelector('[role="listbox"]') as HTMLElement;
+  const items = () =>
+    Array.from(container.querySelectorAll<HTMLElement>('[role="option"]'));
+  const key = (k: string) =>
+    trigger().dispatchEvent(
+      new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true })
+    );
+  const isOpen = () =>
+    !list().hidden && trigger().getAttribute('aria-expanded') === 'true';
+
+  return { control, container, trigger, list, items, key, isOpen };
 }
 
-// @ts-expect-error - Mock Image constructor for testing
-global.Image = MockImage;
+function pointer(
+  target: EventTarget,
+  type: string,
+  pointerType: 'mouse' | 'touch',
+  bubbles = true
+) {
+  const event = new MouseEvent(type, { bubbles, cancelable: true });
+  Object.defineProperty(event, 'pointerType', { value: pointerType });
+  target.dispatchEvent(event);
+  return event;
+}
 
-describe('StyleSwitcherControl', () => {
-  const mockStyles: StyleItem[] = [
-    {
-      id: 'streets',
-      name: 'Streets',
-      image: 'https://example.com/streets.png',
-      styleUrl: 'mapbox://styles/mapbox/streets-v11',
-    },
-    {
-      id: 'satellite',
-      name: 'Satellite',
-      image: 'https://example.com/satellite.png',
-      styleUrl: 'mapbox://styles/mapbox/satellite-v9',
-    },
-    {
-      id: 'dark',
-      name: 'Dark',
-      image: 'https://example.com/dark.png',
-      styleUrl: 'mapbox://styles/mapbox/dark-v10',
-      description: 'Dark theme style',
-    },
-  ];
+function press(target: HTMLElement, pointerType: 'mouse' | 'touch') {
+  pointer(target, 'pointerdown', pointerType);
+  target.click();
+}
 
-  let mockMap: Record<string, unknown>;
+const hover = (el: HTMLElement) => pointer(el, 'pointerenter', 'mouse', false);
+const unhover = (el: HTMLElement) =>
+  pointer(el, 'pointerleave', 'mouse', false);
 
-  beforeEach(() => {
-    // Clear any previous mocks
-    jest.clearAllMocks();
-
-    // Create a mock map object
-    mockMap = {
-      addControl: jest.fn(),
-      removeControl: jest.fn(),
-    };
-
-    // Clear DOM
-    document.body.innerHTML = '';
+function mockDarkMode(matches: boolean) {
+  const query = {
+    matches,
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+  };
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: jest.fn(() => query),
   });
+  return query;
+}
 
-  describe('Constructor and Initialization', () => {
-    it('should create a control with default options', () => {
-      const control = new StyleSwitcherControl({ styles: mockStyles });
-      expect(control).toBeInstanceOf(StyleSwitcherControl);
-    });
+afterEach(() => {
+  added.splice(0).forEach(control => control.onRemove());
+  document.body.innerHTML = '';
+  jest.restoreAllMocks();
+  mockDarkMode(false);
+});
 
-    it('should accept styles with empty ids without throwing', () => {
-      const stylesWithEmptyId = [
-        { id: '', name: 'Invalid', image: 'test.png', styleUrl: 'test' }, // empty id
-        {
-          id: 'valid',
-          name: 'Valid',
-          image: 'valid.png',
-          styleUrl: 'mapbox://styles/test',
-        },
-      ];
-
-      const control = new StyleSwitcherControl({ styles: stylesWithEmptyId });
-      expect(control).toBeInstanceOf(StyleSwitcherControl);
-    });
-
-    it('should handle activeStyleId option', () => {
-      const control = new StyleSwitcherControl({
-        styles: mockStyles,
-        activeStyleId: 'satellite',
-      });
-      expect(control).toBeInstanceOf(StyleSwitcherControl);
-    });
-
-    it('should handle theme options', () => {
-      const lightControl = new StyleSwitcherControl({
-        styles: mockStyles,
-        theme: 'light',
-      });
-      expect(lightControl).toBeInstanceOf(StyleSwitcherControl);
-
-      const darkControl = new StyleSwitcherControl({
-        styles: mockStyles,
-        theme: 'dark',
-      });
-      expect(darkControl).toBeInstanceOf(StyleSwitcherControl);
-
-      const autoControl = new StyleSwitcherControl({
-        styles: mockStyles,
-        theme: 'auto',
-      });
-      expect(autoControl).toBeInstanceOf(StyleSwitcherControl);
-    });
-
-    it('should handle RTL option', () => {
-      const control = new StyleSwitcherControl({
-        styles: mockStyles,
-        rtl: true,
-      });
-      expect(control).toBeInstanceOf(StyleSwitcherControl);
-    });
-
-    it('should handle showLabels and showImages options', () => {
-      const noLabelsControl = new StyleSwitcherControl({
-        styles: mockStyles,
-        showLabels: false,
-      });
-      expect(noLabelsControl).toBeInstanceOf(StyleSwitcherControl);
-
-      const noImagesControl = new StyleSwitcherControl({
-        styles: mockStyles,
-        showImages: false,
-      });
-      expect(noImagesControl).toBeInstanceOf(StyleSwitcherControl);
-    });
-
-    it('should throw error when both showLabels and showImages are false', () => {
-      expect(() => {
+describe('options', () => {
+  it('throws when both showLabels and showImages are false', () => {
+    const message = 'At least one of showLabels or showImages must be true.';
+    expect(
+      () =>
         new StyleSwitcherControl({
-          styles: mockStyles,
+          styles,
           showLabels: false,
           showImages: false,
-        });
-      }).toThrow('At least one of showLabels or showImages must be true.');
-    });
-
-    it('should handle custom class names', () => {
-      const control = new StyleSwitcherControl({
-        styles: mockStyles,
-        classNames: {
-          container: 'custom-container',
-          list: 'custom-list',
-        },
-      });
-      expect(control).toBeInstanceOf(StyleSwitcherControl);
-    });
+        })
+    ).toThrow(message);
   });
 
-  describe('DOM Manipulation', () => {
-    let control: StyleSwitcherControl;
-    let container: HTMLElement;
+  it('warns and keeps previous values when an update would hide both', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation();
+    const { control, items } = setup({ showImages: false });
 
-    beforeEach(() => {
-      control = new StyleSwitcherControl({ styles: mockStyles });
-      container = control.onAdd(mockMap);
-      document.body.appendChild(container);
-    });
-
-    afterEach(() => {
-      control.onRemove();
-    });
-
-    it('should create and return a DOM element when onAdd is called', () => {
-      expect(container).toBeInstanceOf(HTMLElement);
-      expect(container.classList.contains('style-switcher')).toBe(true);
-    });
-
-    it('should have proper ARIA attributes', () => {
-      expect(container.getAttribute('role')).toBe('listbox');
-      expect(container.getAttribute('aria-label')).toBe('Style switcher');
-      expect(container.getAttribute('aria-expanded')).toBe('false');
-      expect(container.getAttribute('tabindex')).toBe('0');
-    });
-
-    it('should apply RTL direction when rtl option is true', () => {
-      const rtlControl = new StyleSwitcherControl({
-        styles: mockStyles,
-        rtl: true,
-      });
-      const rtlContainer = rtlControl.onAdd(mockMap);
-
-      expect(rtlContainer.getAttribute('dir')).toBe('rtl');
-
-      rtlControl.onRemove();
-    });
-
-    it('should expand and collapse on mouse events', () => {
-      // Initially collapsed
-      expect(container.getAttribute('aria-expanded')).toBe('false');
-
-      // Mouse enter should expand
-      container.dispatchEvent(new Event('mouseenter'));
-      expect(container.getAttribute('aria-expanded')).toBe('true');
-
-      // Mouse leave should collapse
-      container.dispatchEvent(new Event('mouseleave'));
-      expect(container.getAttribute('aria-expanded')).toBe('false');
-    });
-
-    it('should expand and collapse on focus events', () => {
-      // Initially collapsed
-      expect(container.getAttribute('aria-expanded')).toBe('false');
-
-      // Focus should expand
-      container.dispatchEvent(new Event('focus'));
-      expect(container.getAttribute('aria-expanded')).toBe('true');
-
-      // Blur should collapse
-      container.dispatchEvent(new Event('blur'));
-      expect(container.getAttribute('aria-expanded')).toBe('false');
-    });
-
-    it('should not re-render when expand state is already the same', () => {
-      // Expand the control
-      container.dispatchEvent(new Event('mouseenter'));
-      const listRef = container.querySelector('.style-switcher-list');
-
-      // Dispatch mouseenter again — same state, should hit early return in _setExpanded
-      container.dispatchEvent(new Event('mouseenter'));
-
-      // If no re-render occurred, the list DOM node reference is unchanged
-      expect(container.querySelector('.style-switcher-list')).toBe(listRef);
-    });
-
-    it('should not throw when events fire after control is removed', () => {
-      // Expand so _expanded = true
-      container.dispatchEvent(new Event('mouseenter'));
-
-      // Remove the control — sets _container to null
-      control.onRemove();
-
-      // mouseleave on the detached element triggers _setExpanded(false) → _applyTheme()
-      // with _container === null; should hit early return without throwing
-      expect(() => {
-        container.dispatchEvent(new Event('mouseleave'));
-      }).not.toThrow();
-    });
-
-    it('should apply maxHeight and animationDuration to list element', () => {
-      container.dispatchEvent(new Event('mouseenter'));
-      const list = container.querySelector(
-        '.style-switcher-list'
-      ) as HTMLElement;
-      expect(list).toBeTruthy();
-      expect(list.style.maxHeight).toBe('300px');
-      expect(list.style.animationDuration).toBe('200ms');
-    });
-
-    it('should apply custom maxHeight and animationDuration', () => {
-      const customControl = new StyleSwitcherControl({
-        styles: mockStyles,
-        maxHeight: 500,
-        animationDuration: 400,
-      });
-      const customContainer = customControl.onAdd(mockMap);
-      document.body.appendChild(customContainer);
-
-      customContainer.dispatchEvent(new Event('mouseenter'));
-      const list = customContainer.querySelector(
-        '.style-switcher-list'
-      ) as HTMLElement;
-      expect(list.style.maxHeight).toBe('500px');
-      expect(list.style.animationDuration).toBe('400ms');
-
-      customControl.onRemove();
-    });
-
-    it('should render style items when expanded', () => {
-      // Expand the control
-      container.dispatchEvent(new Event('mouseenter'));
-
-      // Check if style items are rendered - should have one list plus one selected item
-      const list = container.querySelector('.style-switcher-list');
-      expect(list).toBeTruthy();
-
-      // The list should contain all styles
-      const listItems = list?.querySelectorAll('[role="option"]');
-      expect(listItems?.length).toBe(mockStyles.length);
-    });
-
-    it('should show only active style when collapsed', () => {
-      // When collapsed, should only show active style
-      expect(container.getAttribute('aria-expanded')).toBe('false');
-
-      const visibleItems = container.querySelectorAll('[role="option"]');
-      expect(visibleItems.length).toBe(1);
-
-      // The visible item should have aria-selected="true"
-      const activeItem = container.querySelector('[aria-selected="true"]');
-      expect(activeItem).toBeTruthy();
-    });
+    expect(() =>
+      control.updateOptions({ showLabels: false, theme: 'dark' })
+    ).not.toThrow();
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('Keeping their previous values.')
+    );
+    expect(items()[0].querySelector('span')).toBeTruthy();
+    expect(items()[0].querySelector('img')).toBeNull();
   });
 
-  describe('Style Change Handling', () => {
-    let control: StyleSwitcherControl;
-    let container: HTMLElement;
-    let onBeforeStyleChange: jest.Mock;
-    let onAfterStyleChange: jest.Mock;
-
-    beforeEach(() => {
-      onBeforeStyleChange = jest.fn();
-      onAfterStyleChange = jest.fn();
-
-      control = new StyleSwitcherControl({
-        styles: mockStyles,
-        onBeforeStyleChange,
-        onAfterStyleChange,
-      });
-      container = control.onAdd(mockMap);
-      document.body.appendChild(container);
+  it('uses defaults when options are explicitly undefined', () => {
+    const { list } = setup({
+      maxHeight: undefined,
+      animationDuration: undefined,
     });
-
-    afterEach(() => {
-      control.onRemove();
-    });
-
-    it('should call callbacks when style is changed', async () => {
-      // Expand the control
-      container.dispatchEvent(new Event('mouseenter'));
-
-      // Find the list and get style items
-      const list = container.querySelector('.style-switcher-list');
-      const styleItems = list?.querySelectorAll('[role="option"]');
-      expect(styleItems?.length).toBe(mockStyles.length);
-
-      // Click on the second style (satellite)
-      const satelliteItem = styleItems?.[1] as HTMLElement;
-      expect(satelliteItem).toBeTruthy();
-      satelliteItem.click();
-
-      // Wait for any asynchronous operations
-      await new Promise(resolve => setTimeout(resolve, 50));
-
-      // Check if callbacks were called
-      expect(onBeforeStyleChange).toHaveBeenCalledWith(
-        mockStyles[0],
-        mockStyles[1]
-      );
-      expect(onAfterStyleChange).toHaveBeenCalledWith(
-        mockStyles[0],
-        mockStyles[1]
-      );
-    });
-
-    it('should update active style after change', async () => {
-      // Expand the control
-      container.dispatchEvent(new Event('mouseenter'));
-
-      // Click on satellite style (second item)
-      const list = container.querySelector('.style-switcher-list');
-      const styleItems = list?.querySelectorAll('[role="option"]');
-      const satelliteItem = styleItems?.[1] as HTMLElement;
-      satelliteItem.click();
-
-      // Wait for state update
-      await new Promise(resolve => setTimeout(resolve, 50));
-
-      // Check that the satellite style is now selected
-      const selectedItems = container.querySelectorAll(
-        '[aria-selected="true"]'
-      );
-      expect(selectedItems.length).toBeGreaterThan(0);
-    });
-
-    it('should handle style change without callbacks defined', async () => {
-      const controlNoCallbacks = new StyleSwitcherControl({
-        styles: mockStyles,
-      });
-      const containerNoCallbacks = controlNoCallbacks.onAdd(mockMap);
-      document.body.appendChild(containerNoCallbacks);
-
-      // Expand and click a different style — no callbacks provided
-      containerNoCallbacks.dispatchEvent(new Event('mouseenter'));
-      const list = containerNoCallbacks.querySelector('.style-switcher-list');
-      const styleItems = list?.querySelectorAll('[role="option"]');
-      const satelliteItem = styleItems?.[1] as HTMLElement;
-
-      expect(() => satelliteItem.click()).not.toThrow();
-
-      await new Promise(resolve => setTimeout(resolve, 50));
-
-      controlNoCallbacks.onRemove();
-    });
-
-    it('should not call callbacks when clicking the same style', async () => {
-      // Expand the control
-      container.dispatchEvent(new Event('mouseenter'));
-
-      // Click on the currently active style (first item)
-      const list = container.querySelector('.style-switcher-list');
-      const styleItems = list?.querySelectorAll('[role="option"]');
-      const streetsItem = styleItems?.[0] as HTMLElement;
-      streetsItem.click();
-
-      // Wait for any asynchronous operations
-      await new Promise(resolve => setTimeout(resolve, 50));
-
-      // Callbacks should not be called for same style
-      expect(onBeforeStyleChange).not.toHaveBeenCalled();
-      expect(onAfterStyleChange).not.toHaveBeenCalled();
-    });
+    expect(list().style.maxHeight).toBe('300px');
+    expect(list().style.animationDuration).toBe('200ms');
   });
 
-  describe('Theme Handling', () => {
-    it('should apply light theme', () => {
-      const control = new StyleSwitcherControl({
-        styles: mockStyles,
-        theme: 'light',
-      });
-      const container = control.onAdd(mockMap);
+  it('restores a default when updateOptions receives undefined', () => {
+    const { control, list } = setup({ maxHeight: 500, animationDuration: 400 });
+    expect(list().style.maxHeight).toBe('500px');
+    expect(list().style.animationDuration).toBe('400ms');
 
-      expect(container.classList.contains('style-switcher-light')).toBe(true);
-      expect(container.classList.contains('style-switcher-dark')).toBe(false);
-
-      control.onRemove();
+    control.updateOptions({
+      maxHeight: undefined,
+      animationDuration: undefined,
     });
-
-    it('should apply dark theme', () => {
-      const control = new StyleSwitcherControl({
-        styles: mockStyles,
-        theme: 'dark',
-      });
-      const container = control.onAdd(mockMap);
-
-      expect(container.classList.contains('style-switcher-dark')).toBe(true);
-      expect(container.classList.contains('style-switcher-light')).toBe(false);
-
-      control.onRemove();
-    });
-
-    it('should apply dark theme when auto and dark mode preferred', () => {
-      const mockMatchMedia = jest.fn(() => ({
-        matches: true, // dark mode preference
-        media: '(prefers-color-scheme: dark)',
-        onchange: null,
-        addListener: jest.fn(),
-        removeListener: jest.fn(),
-        addEventListener: jest.fn(),
-        removeEventListener: jest.fn(),
-        dispatchEvent: jest.fn(),
-      }));
-
-      Object.defineProperty(window, 'matchMedia', {
-        writable: true,
-        value: mockMatchMedia,
-      });
-
-      const control = new StyleSwitcherControl({
-        styles: mockStyles,
-        theme: 'auto',
-      });
-      const container = control.onAdd(mockMap);
-
-      expect(container.classList.contains('style-switcher-dark')).toBe(true);
-
-      control.onRemove();
-    });
-
-    it('should apply light theme when auto and light mode preferred', () => {
-      const mockMatchMedia = jest.fn(() => ({
-        matches: false, // light mode preference
-        media: '(prefers-color-scheme: dark)',
-        onchange: null,
-        addListener: jest.fn(),
-        removeListener: jest.fn(),
-        addEventListener: jest.fn(),
-        removeEventListener: jest.fn(),
-        dispatchEvent: jest.fn(),
-      }));
-
-      Object.defineProperty(window, 'matchMedia', {
-        writable: true,
-        value: mockMatchMedia,
-      });
-
-      const control = new StyleSwitcherControl({
-        styles: mockStyles,
-        theme: 'auto',
-      });
-      const container = control.onAdd(mockMap);
-
-      expect(container.classList.contains('style-switcher-light')).toBe(true);
-      expect(container.classList.contains('style-switcher-dark')).toBe(false);
-
-      control.onRemove();
-    });
-
-    it('should update theme when OS preference changes', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let changeHandler: any = null;
-      const mockMQ = {
-        matches: false,
-        media: '(prefers-color-scheme: dark)',
-        onchange: null,
-        addListener: jest.fn(),
-        removeListener: jest.fn(),
-        addEventListener: jest.fn((_: string, fn: () => void) => {
-          changeHandler = fn;
-        }),
-        removeEventListener: jest.fn(),
-        dispatchEvent: jest.fn(),
-      };
-
-      Object.defineProperty(window, 'matchMedia', {
-        writable: true,
-        value: jest.fn(() => mockMQ),
-      });
-
-      const control = new StyleSwitcherControl({
-        styles: mockStyles,
-        theme: 'auto',
-      });
-      const container = control.onAdd(mockMap);
-      expect(container.classList.contains('style-switcher-light')).toBe(true);
-
-      // Simulate OS switching to dark mode
-      mockMQ.matches = true;
-      changeHandler?.();
-
-      expect(container.classList.contains('style-switcher-dark')).toBe(true);
-      expect(container.classList.contains('style-switcher-light')).toBe(false);
-
-      control.onRemove();
-      expect(mockMQ.removeEventListener).toHaveBeenCalled();
-    });
+    expect(list().style.maxHeight).toBe('300px');
+    expect(list().style.animationDuration).toBe('200ms');
   });
 
-  describe('Error Handling', () => {
-    it('should handle empty styles array gracefully', () => {
-      expect(() => {
-        new StyleSwitcherControl({ styles: [] });
-      }).not.toThrow();
-    });
-
-    it('should handle invalid activeStyleId gracefully', () => {
-      // Mock console.warn to suppress expected warning
-      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
-
-      const control = new StyleSwitcherControl({
-        styles: mockStyles,
-        activeStyleId: 'non-existent-style',
-      });
-
-      expect(control).toBeInstanceOf(StyleSwitcherControl);
-
-      // Verify that warning was called
-      expect(consoleSpy).toHaveBeenCalledWith(
-        'StyleSwitcherControl: activeStyleId "non-existent-style" does not match any style. Using first style instead.'
-      );
-
-      // Should fall back to first style
-      const container = control.onAdd(mockMap);
-      const activeItem = container.querySelector('[aria-selected="true"]');
-      expect(activeItem).toBeTruthy();
-
-      // Restore console.warn
-      consoleSpy.mockRestore();
-
-      control.onRemove();
-    });
-
-    it('should handle missing required options gracefully', () => {
-      expect(() => {
-        new StyleSwitcherControl({ styles: [] });
-      }).not.toThrow();
-    });
+  it('leaves omitted keys unchanged and keeps styles on undefined', () => {
+    const { control, list, items } = setup({ maxHeight: 500 });
+    control.updateOptions({ theme: 'dark', styles: undefined });
+    expect(list().style.maxHeight).toBe('500px');
+    expect(items()).toHaveLength(styles.length);
   });
 
-  describe('Accessibility', () => {
-    let control: StyleSwitcherControl;
-    let container: HTMLElement;
+  it('can be updated before being added to a map', () => {
+    const control = new StyleSwitcherControl({ styles });
+    control.updateOptions({ activeStyleId: 'satellite' });
+    const container = control.onAdd({});
+    added.push(control);
+    expect(container.querySelector('[role="combobox"]')?.textContent).toBe(
+      'Satellite'
+    );
+  });
+});
 
-    beforeEach(() => {
-      control = new StyleSwitcherControl({ styles: mockStyles });
-      container = control.onAdd(mockMap);
-      document.body.appendChild(container);
-    });
-
-    afterEach(() => {
-      control.onRemove();
-    });
-
-    it('should have proper keyboard navigation support', () => {
-      expect(container.getAttribute('tabindex')).toBe('0');
-      expect(container.getAttribute('role')).toBe('listbox');
-    });
-
-    it('should expand on Enter key when collapsed', () => {
-      expect(container.getAttribute('aria-expanded')).toBe('false');
-      container.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })
-      );
-      expect(container.getAttribute('aria-expanded')).toBe('true');
-    });
-
-    it('should expand on Space key when collapsed', () => {
-      expect(container.getAttribute('aria-expanded')).toBe('false');
-      container.dispatchEvent(
-        new KeyboardEvent('keydown', { key: ' ', bubbles: true })
-      );
-      expect(container.getAttribute('aria-expanded')).toBe('true');
-    });
-
-    it('should navigate items with ArrowDown and ArrowUp keys', () => {
-      // Expand first
-      container.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })
-      );
-      expect(container.getAttribute('aria-expanded')).toBe('true');
-
-      // ArrowDown should focus next item
-      container.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true })
-      );
-      const list = container.querySelector('.style-switcher-list');
-      const items = list?.querySelectorAll('[role="option"]');
-      expect(items).toBeTruthy();
-      expect(items!.length).toBe(mockStyles.length);
-
-      // ArrowUp should focus previous item
-      container.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true })
-      );
-      // Should not go below index 0
-      expect(container.getAttribute('aria-expanded')).toBe('true');
-    });
-
-    it('should select a style with Enter when expanded and item focused', () => {
-      const onAfterStyleChange = jest.fn();
-      const kbControl = new StyleSwitcherControl({
-        styles: mockStyles,
-        onAfterStyleChange,
-      });
-      const kbContainer = kbControl.onAdd(mockMap);
-      document.body.appendChild(kbContainer);
-
-      // Expand
-      kbContainer.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })
-      );
-      // Move to second item
-      kbContainer.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true })
-      );
-      // Select it
-      kbContainer.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })
-      );
-
-      expect(onAfterStyleChange).toHaveBeenCalledWith(
-        mockStyles[0],
-        mockStyles[1]
-      );
-
-      kbControl.onRemove();
-    });
-
-    it('should close on Escape key', () => {
-      // Expand first
-      container.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })
-      );
-      expect(container.getAttribute('aria-expanded')).toBe('true');
-
-      // Escape should collapse
-      container.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })
-      );
-      expect(container.getAttribute('aria-expanded')).toBe('false');
-    });
-
-    it('should have tabIndex on style items', () => {
-      container.dispatchEvent(new Event('mouseenter'));
-      const items = container.querySelectorAll('[role="option"]');
-      items.forEach(item => {
-        expect((item as HTMLElement).tabIndex).toBe(0);
-      });
-    });
-
-    it('should update aria-expanded correctly', () => {
-      expect(container.getAttribute('aria-expanded')).toBe('false');
-
-      container.dispatchEvent(new Event('focus'));
-      expect(container.getAttribute('aria-expanded')).toBe('true');
-
-      container.dispatchEvent(new Event('blur'));
-      expect(container.getAttribute('aria-expanded')).toBe('false');
-    });
-
-    it('should have aria-selected attributes on style items', () => {
-      container.dispatchEvent(new Event('mouseenter'));
-
-      const styleItems = container.querySelectorAll('[role="option"]');
-      expect(styleItems.length).toBeGreaterThan(0);
-
-      // At least one item should be selected
-      const selectedItems = container.querySelectorAll(
-        '[aria-selected="true"]'
-      );
-      expect(selectedItems.length).toBeGreaterThan(0);
-    });
+describe('active style', () => {
+  it('defaults to the first style', () => {
+    expect(setup().trigger().textContent).toBe('Streets');
   });
 
-  describe('Custom Configuration', () => {
-    it('should respect showLabels option', () => {
-      const control = new StyleSwitcherControl({
-        styles: mockStyles,
-        showLabels: false,
-      });
-      const container = control.onAdd(mockMap);
-
-      // Expand to see all items
-      container.dispatchEvent(new Event('mouseenter'));
-
-      // Should have hide-label class when labels are disabled
-      const items = container.querySelectorAll('[role="option"]');
-      items.forEach(item => {
-        expect(item.classList.contains('hide-label')).toBe(true);
-      });
-
-      control.onRemove();
-    });
-
-    it('should respect showImages option', () => {
-      const control = new StyleSwitcherControl({
-        styles: mockStyles,
-        showImages: false,
-      });
-      const container = control.onAdd(mockMap);
-
-      // Expand to see all items
-      container.dispatchEvent(new Event('mouseenter'));
-
-      // Should not have image elements when images are disabled
-      const images = container.querySelectorAll('img');
-      expect(images.length).toBe(0);
-
-      control.onRemove();
-    });
-
-    it('should use custom class names when provided', () => {
-      const customClasses = {
-        container: 'my-custom-container',
-        list: 'my-custom-list',
-        item: 'my-custom-item',
-      };
-
-      const control = new StyleSwitcherControl({
-        styles: mockStyles,
-        classNames: customClasses,
-      });
-      const container = control.onAdd(mockMap);
-
-      expect(container.classList.contains('my-custom-container')).toBe(true);
-
-      control.onRemove();
-    });
+  it('uses activeStyleId', () => {
+    const { trigger, items } = setup({ activeStyleId: 'satellite' });
+    expect(trigger().textContent).toBe('Satellite');
+    expect(items()[1].getAttribute('aria-selected')).toBe('true');
+    expect(items()[0].getAttribute('aria-selected')).toBe('false');
   });
 
-  describe('updateOptions', () => {
-    let control: StyleSwitcherControl;
-    let container: HTMLElement;
-
-    beforeEach(() => {
-      control = new StyleSwitcherControl({
-        styles: mockStyles,
-        activeStyleId: 'streets',
-      });
-      container = control.onAdd(mockMap);
-      document.body.appendChild(container);
+  it('warns and falls back when the constructor id is unknown', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation();
+    const onAfterStyleChange = jest.fn();
+    const { trigger, items, control } = setup({
+      activeStyleId: 'unknown',
+      onAfterStyleChange,
     });
+    expect(warn).toHaveBeenCalledWith(
+      'StyleSwitcherControl: activeStyleId "unknown" does not match any style. Using first style instead.'
+    );
+    expect(trigger().textContent).toBe('Streets');
 
-    afterEach(() => {
+    // `from` must be the fallback style, never undefined.
+    items()[1].click();
+    expect(onAfterStyleChange).toHaveBeenCalledWith(styles[0], styles[1]);
+    expect(control).toBeDefined();
+  });
+
+  it('updates via updateOptions without firing callbacks', () => {
+    const onAfterStyleChange = jest.fn();
+    const { control, trigger } = setup({ onAfterStyleChange });
+    control.updateOptions({ activeStyleId: 'satellite' });
+    expect(trigger().textContent).toBe('Satellite');
+    expect(onAfterStyleChange).not.toHaveBeenCalled();
+  });
+
+  it('keeps the selection when updateOptions gets an unknown id', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation();
+    const { control, trigger } = setup({ activeStyleId: 'satellite' });
+    control.updateOptions({ activeStyleId: 'nope', styles });
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('Keeping previous selection.')
+    );
+    expect(trigger().textContent).toBe('Satellite');
+  });
+
+  it('uses the first new style for new styles plus an unknown id', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation();
+    const { control, trigger } = setup({ activeStyleId: 'streets' });
+    const next = [styles[1], styles[0]];
+    control.updateOptions({ styles: next, activeStyleId: 'nope' });
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('Using first style instead.')
+    );
+    expect(trigger().textContent).toBe('Satellite');
+  });
+
+  it('accepts a combined update of styles and a new id', () => {
+    const { control, trigger } = setup();
+    const next: StyleItem[] = [
+      { id: 'a', name: 'A', image: 'a.png', styleUrl: 'a' },
+      { id: 'b', name: 'B', image: 'b.png', styleUrl: 'b' },
+    ];
+    control.updateOptions({ styles: next, activeStyleId: 'b' });
+    expect(trigger().textContent).toBe('B');
+  });
+
+  it('falls back to the first style when the active one is removed', () => {
+    const onAfterStyleChange = jest.fn();
+    const { control, trigger, items } = setup({ onAfterStyleChange });
+    const next = [styles[1], styles[2]];
+    control.updateOptions({ styles: next });
+    expect(trigger().textContent).toBe('Satellite');
+
+    items()[1].click();
+    expect(onAfterStyleChange).toHaveBeenCalledWith(next[0], next[1]);
+  });
+
+  it('keeps the selection when the new list still contains it', () => {
+    const { control, trigger } = setup({ activeStyleId: 'satellite' });
+    control.updateOptions({ styles: [styles[2], styles[1]] });
+    expect(trigger().textContent).toBe('Satellite');
+  });
+});
+
+describe('selecting a style', () => {
+  it('fires callbacks in order and exposes the new state to onAfter', () => {
+    const calls: string[] = [];
+    const ref: { trigger?: () => HTMLElement } = {};
+    const { trigger, items } = setup({
+      onBeforeStyleChange: (from, to) => {
+        calls.push(`before ${from.id}>${to.id} ${ref.trigger?.().textContent}`);
+      },
+      onAfterStyleChange: (from, to) => {
+        calls.push(`after ${from.id}>${to.id} ${ref.trigger?.().textContent}`);
+      },
+    });
+    ref.trigger = trigger;
+
+    items()[1].click();
+    expect(calls).toEqual([
+      'before streets>satellite Streets',
+      'after streets>satellite Satellite',
+    ]);
+    expect(items()[1].classList.contains('selected')).toBe(true);
+    expect(items()[0].classList.contains('selected')).toBe(false);
+  });
+
+  it('does nothing when choosing the active style', () => {
+    const onBeforeStyleChange = jest.fn();
+    const onAfterStyleChange = jest.fn();
+    const { items } = setup({ onBeforeStyleChange, onAfterStyleChange });
+    items()[0].click();
+    expect(onBeforeStyleChange).not.toHaveBeenCalled();
+    expect(onAfterStyleChange).not.toHaveBeenCalled();
+  });
+
+  it('works without callbacks and from a click on the thumbnail', () => {
+    const { items, trigger } = setup();
+    items()[1].querySelector('img')?.click();
+    expect(trigger().textContent).toBe('Satellite');
+  });
+});
+
+describe('mouse', () => {
+  it('opens on hover and closes on leave', () => {
+    const { container, isOpen } = setup();
+    expect(isOpen()).toBe(false);
+    hover(container);
+    expect(isOpen()).toBe(true);
+    unhover(container);
+    expect(isOpen()).toBe(false);
+  });
+
+  it('stays open after selecting so the pointer is not left stranded', () => {
+    const { container, items, isOpen, trigger } = setup();
+    hover(container);
+    press(items()[1], 'mouse');
+    expect(trigger().textContent).toBe('Satellite');
+    expect(isOpen()).toBe(true);
+  });
+
+  it('does not close when clicking the trigger while hovering', () => {
+    const { container, trigger, isOpen } = setup();
+    hover(container);
+    press(trigger(), 'mouse');
+    expect(isOpen()).toBe(true);
+  });
+
+  it('reopens on click after Escape closed it during hover', () => {
+    const { container, trigger, key, isOpen } = setup();
+    hover(container);
+    key('Escape');
+    expect(isOpen()).toBe(false);
+    press(trigger(), 'mouse');
+    expect(isOpen()).toBe(true);
+  });
+
+  it('lets a press on the trigger focus it natively', () => {
+    const { trigger } = setup();
+    const event = pointer(trigger(), 'mousedown', 'mouse');
+    expect(event.defaultPrevented).toBe(false);
+  });
+
+  it('does not move focus when pressing inside the control', () => {
+    const { container, trigger, items, isOpen } = setup();
+    trigger().focus();
+    hover(container);
+
+    // Without preventDefault, the browser would blur the trigger on press,
+    // closing the list before the option's click could fire.
+    const event = pointer(items()[1], 'mousedown', 'mouse');
+    expect(event.defaultPrevented).toBe(true);
+    expect(isOpen()).toBe(true);
+  });
+});
+
+describe('touch', () => {
+  it('ignores touch hover events', () => {
+    const { container, isOpen } = setup();
+    pointer(container, 'pointerenter', 'touch', false);
+    expect(isOpen()).toBe(false);
+  });
+
+  it('toggles with taps on the trigger', () => {
+    const { trigger, isOpen } = setup();
+    press(trigger(), 'touch');
+    expect(isOpen()).toBe(true);
+    press(trigger(), 'touch');
+    expect(isOpen()).toBe(false);
+  });
+
+  it('closes after selecting', () => {
+    const { trigger, items, isOpen } = setup();
+    press(trigger(), 'touch');
+    press(items()[1], 'touch');
+    expect(trigger().textContent).toBe('Satellite');
+    expect(isOpen()).toBe(false);
+  });
+
+  it('closes when tapping outside, but not inside', () => {
+    const { trigger, items, isOpen } = setup();
+    press(trigger(), 'touch');
+    pointer(items()[0], 'pointerdown', 'touch');
+    expect(isOpen()).toBe(true);
+    pointer(document.body, 'pointerdown', 'touch');
+    expect(isOpen()).toBe(false);
+  });
+});
+
+describe('shadow DOM', () => {
+  it('does not treat presses inside a shadow root as outside', () => {
+    const control = new StyleSwitcherControl({ styles });
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    const container = control.onAdd({});
+    host.attachShadow({ mode: 'open' }).appendChild(container);
+    added.push(control);
+
+    hover(container);
+    const option = container.querySelector('[role="option"]') as HTMLElement;
+    const event = new MouseEvent('pointerdown', {
+      bubbles: true,
+      composed: true,
+    });
+    option.dispatchEvent(event);
+    expect(
+      container
+        .querySelector('[role="combobox"]')
+        ?.getAttribute('aria-expanded')
+    ).toBe('true');
+
+    pointer(document.body, 'pointerdown', 'mouse');
+    expect(
+      container
+        .querySelector('[role="combobox"]')
+        ?.getAttribute('aria-expanded')
+    ).toBe('false');
+  });
+});
+
+describe('keyboard', () => {
+  it.each(['Enter', ' ', 'ArrowDown', 'ArrowUp'])('opens with %j', k => {
+    const { key, isOpen } = setup();
+    key(k);
+    expect(isOpen()).toBe(true);
+  });
+
+  it('does not open on focus alone', () => {
+    const { trigger, isOpen } = setup();
+    trigger().focus();
+    expect(isOpen()).toBe(false);
+  });
+
+  // Regression: the list used to be destroyed as soon as focus moved to an
+  // option, because that blurred the container. Real focus is required here.
+  it('keeps real focus on the trigger and stays open while navigating', () => {
+    const { trigger, key, isOpen } = setup();
+    trigger().focus();
+    key('Enter');
+    key('ArrowDown');
+    key('ArrowDown');
+    expect(document.activeElement).toBe(trigger());
+    expect(isOpen()).toBe(true);
+  });
+
+  it('starts on the selected option and exposes the highlight to AT', () => {
+    const { trigger, items, key } = setup({ activeStyleId: 'satellite' });
+    expect(trigger().hasAttribute('aria-activedescendant')).toBe(false);
+    key('Enter');
+    expect(trigger().getAttribute('aria-activedescendant')).toBe(items()[1].id);
+    expect(items()[1].classList.contains('active')).toBe(true);
+  });
+
+  it('shows no highlight when opened by pointer', () => {
+    const mouse = setup();
+    hover(mouse.container);
+    press(mouse.items()[1], 'mouse');
+    expect(mouse.container.querySelector('.active')).toBeNull();
+    expect(mouse.trigger().hasAttribute('aria-activedescendant')).toBe(false);
+
+    const touch = setup();
+    press(touch.trigger(), 'touch');
+    expect(touch.container.querySelector('.active')).toBeNull();
+  });
+
+  it('continues from the selected style after a pointer open', () => {
+    const { container, trigger, items, key } = setup({
+      activeStyleId: 'satellite',
+    });
+    hover(container);
+    key('ArrowDown');
+    expect(trigger().getAttribute('aria-activedescendant')).toBe(items()[2].id);
+  });
+
+  it('closes without selecting on Enter when nothing is highlighted', () => {
+    const onAfterStyleChange = jest.fn();
+    const { container, key, isOpen } = setup({ onAfterStyleChange });
+    hover(container);
+    expect(() => key('Enter')).not.toThrow();
+    expect(isOpen()).toBe(false);
+    expect(onAfterStyleChange).not.toHaveBeenCalled();
+  });
+
+  it('moves with arrows, Home and End, and clamps at the ends', () => {
+    const { trigger, items, key } = setup();
+    const current = () => trigger().getAttribute('aria-activedescendant');
+    key('Enter');
+    key('ArrowUp');
+    expect(current()).toBe(items()[0].id);
+    key('ArrowDown');
+    expect(current()).toBe(items()[1].id);
+    expect(items()[0].classList.contains('active')).toBe(false);
+    key('End');
+    key('ArrowDown');
+    expect(current()).toBe(items()[2].id);
+    key('Home');
+    expect(current()).toBe(items()[0].id);
+  });
+
+  it.each(['Enter', ' '])('selects the highlight and closes with %j', k => {
+    const onAfterStyleChange = jest.fn();
+    const { key, isOpen, trigger } = setup({ onAfterStyleChange });
+    key('Enter');
+    key('ArrowDown');
+    key(k);
+    expect(onAfterStyleChange).toHaveBeenCalledWith(styles[0], styles[1]);
+    expect(isOpen()).toBe(false);
+    expect(trigger().hasAttribute('aria-activedescendant')).toBe(false);
+  });
+
+  it('closes with Escape without selecting, keeping focus', () => {
+    const onAfterStyleChange = jest.fn();
+    const { trigger, key, isOpen } = setup({ onAfterStyleChange });
+    trigger().focus();
+    key('Enter');
+    key('ArrowDown');
+    key('Escape');
+    expect(isOpen()).toBe(false);
+    expect(onAfterStyleChange).not.toHaveBeenCalled();
+    expect(document.activeElement).toBe(trigger());
+  });
+
+  it('closes on blur', () => {
+    const { trigger, key, isOpen } = setup();
+    trigger().focus();
+    key('Enter');
+    trigger().blur();
+    expect(isOpen()).toBe(false);
+  });
+
+  it('only prevents the default action of keys it handles', () => {
+    const { trigger, key } = setup();
+    key('Enter');
+    const tab = new KeyboardEvent('keydown', { key: 'Tab', cancelable: true });
+    trigger().dispatchEvent(tab);
+    expect(tab.defaultPrevented).toBe(false);
+  });
+
+  it('scrolls the highlighted option into view', () => {
+    const { items, key } = setup();
+    const scrollIntoView = jest.fn();
+    items()[1].scrollIntoView = scrollIntoView;
+    key('Enter');
+    key('ArrowDown');
+    expect(scrollIntoView).toHaveBeenCalledWith({ block: 'nearest' });
+  });
+});
+
+describe('thumbnails', () => {
+  it('reuses the same DOM across open, close and selection', () => {
+    const { container, items, trigger } = setup();
+    const before = items().map(item => item.querySelector('img'));
+    const triggerImage = trigger().querySelector('img');
+
+    hover(container);
+    unhover(container);
+    hover(container);
+    expect(items().map(item => item.querySelector('img'))).toEqual(before);
+    expect(trigger().querySelector('img')).toBe(triggerImage);
+
+    items()[1].click();
+    expect(items().map(item => item.querySelector('img'))).toEqual(before);
+  });
+
+  it('does not rebuild for a new but identical styles or classNames', () => {
+    const { control, items } = setup({ classNames: { item: 'custom' } });
+    const before = items()[0];
+    control.updateOptions({
+      styles: styles.map(style => ({ ...style })),
+      classNames: { item: 'custom' },
+    });
+    expect(items()[0]).toBe(before);
+  });
+
+  it('keeps trigger focus when the content is rebuilt', () => {
+    const { control, trigger } = setup();
+    trigger().focus();
+    control.updateOptions({ showLabels: false });
+    expect(document.activeElement).toBe(trigger());
+  });
+
+  it('updates thumbnails when the content does change', () => {
+    const { control, trigger } = setup();
+    control.updateOptions({
+      styles: [{ ...styles[0], image: 'https://example.com/new.png' }],
+    });
+    expect(trigger().querySelector('img')?.getAttribute('src')).toBe(
+      'https://example.com/new.png'
+    );
+  });
+
+  it('defers list images and reserves their layout box', () => {
+    const { items, trigger } = setup();
+    const img = items()[0].querySelector('img') as HTMLImageElement;
+    expect(img.getAttribute('loading')).toBe('lazy');
+    expect(img.getAttribute('decoding')).toBe('async');
+    expect(img.getAttribute('width')).toBe('32');
+    expect(img.getAttribute('height')).toBe('32');
+    expect(trigger().querySelector('img')?.getAttribute('loading')).toBe(
+      'eager'
+    );
+  });
+
+  it('names images only when there is no visible label', () => {
+    expect(setup().items()[0].querySelector('img')?.alt).toBe('');
+    const noLabels = setup({ showLabels: false });
+    expect(noLabels.items()[0].querySelector('img')?.alt).toBe('Streets');
+    expect(noLabels.trigger().querySelector('img')?.alt).toBe('Streets');
+  });
+});
+
+describe('rendering', () => {
+  it('builds the ARIA structure with unique ids per control', () => {
+    const a = setup();
+    const b = setup();
+    expect(a.trigger().getAttribute('aria-label')).toBe('Style switcher');
+    expect(a.trigger().getAttribute('aria-haspopup')).toBe('listbox');
+    expect(a.trigger().getAttribute('aria-controls')).toBe(a.list().id);
+    expect(a.trigger().tabIndex).toBe(0);
+    expect(a.list().id).not.toBe(b.list().id);
+    expect(a.items()[0].id).not.toBe(b.items()[0].id);
+  });
+
+  it('uses the description as the tooltip, falling back to the name', () => {
+    const { items } = setup();
+    expect(items()[0].title).toBe('Streets');
+    expect(items()[2].title).toBe('Dark theme style');
+  });
+
+  it('respects showLabels and showImages, including on update', () => {
+    const { control, items, trigger } = setup({ showLabels: false });
+    expect(items()[0].classList.contains('hide-label')).toBe(true);
+    expect(trigger().classList.contains('hide-label')).toBe(true);
+    expect(trigger().querySelector('span')).toBeNull();
+
+    control.updateOptions({ showLabels: true, showImages: false });
+    expect(items()[0].classList.contains('hide-label')).toBe(false);
+    expect(items()[0].querySelector('img')).toBeNull();
+    expect(trigger().querySelector('img')).toBeNull();
+    expect(trigger().textContent).toBe('Streets');
+  });
+
+  it('syncs the dir attribute with rtl', () => {
+    const { control, container } = setup({ rtl: true });
+    expect(container.getAttribute('dir')).toBe('rtl');
+    control.updateOptions({ rtl: false });
+    expect(container.hasAttribute('dir')).toBe(false);
+  });
+
+  it('applies custom class names, including multiple tokens', () => {
+    const { container, items, list, control, trigger, key } = setup({
+      classNames: {
+        container: 'my-switcher extra',
+        list: 'my-list',
+        item: 'my-item',
+        itemSelected: 'my-selected',
+        itemActive: 'my-active',
+        dark: 'my-dark theme',
+      },
+      theme: 'dark',
+    });
+    expect(container.className).toBe('my-switcher extra my-dark theme');
+    expect(list().className).toBe('my-list');
+    expect(items()[0].className).toBe('my-item my-selected');
+    expect(trigger().className).toBe('my-item my-selected');
+    key('Enter');
+    expect(items()[0].className).toBe('my-item my-selected my-active');
+
+    control.updateOptions({ classNames: { container: 'renamed' } });
+    expect(container.classList.contains('my-switcher')).toBe(false);
+    expect(container.classList.contains('renamed')).toBe(true);
+    expect(list().className).toBe('style-switcher-list');
+  });
+
+  it('hides the list inline, so custom list classes cannot reveal it', () => {
+    const { container, list } = setup({ classNames: { list: 'my-list' } });
+    expect(list().style.display).toBe('none');
+    hover(container);
+    expect(list().style.display).toBe('');
+    unhover(container);
+    expect(list().style.display).toBe('none');
+  });
+
+  it('applies the outlined design and can remove it', () => {
+    const { control, container } = setup({ design: 'outlined' });
+    expect(container.classList.contains('style-switcher-outlined')).toBe(true);
+    control.updateOptions({ design: 'default' });
+    expect(container.classList.contains('style-switcher-outlined')).toBe(false);
+  });
+});
+
+describe('theme', () => {
+  const has = (el: HTMLElement, theme: string) =>
+    el.classList.contains(`style-switcher-${theme}`);
+
+  it('applies light by default, and dark on request', () => {
+    expect(has(setup().container, 'light')).toBe(true);
+    const dark = setup({ theme: 'dark' }).container;
+    expect(has(dark, 'dark')).toBe(true);
+    expect(has(dark, 'light')).toBe(false);
+  });
+
+  it.each([
+    [true, 'dark'],
+    [false, 'light'],
+  ])('auto with prefers-dark=%s applies %s', (matches, theme) => {
+    mockDarkMode(matches);
+    expect(has(setup({ theme: 'auto' }).container, theme)).toBe(true);
+  });
+
+  it('tracks OS changes in auto mode and detaches on remove', () => {
+    const query = mockDarkMode(false);
+    const { control, container } = setup({ theme: 'auto' });
+    expect(has(container, 'light')).toBe(true);
+
+    const [, onChange] = query.addEventListener.mock.calls[0];
+    query.matches = true;
+    onChange();
+    expect(has(container, 'dark')).toBe(true);
+    expect(has(container, 'light')).toBe(false);
+
+    control.onRemove();
+    expect(query.removeEventListener).toHaveBeenCalledWith('change', onChange);
+  });
+
+  it('starts tracking OS changes when switched to auto after mount', () => {
+    const query = mockDarkMode(false);
+    const { control, container } = setup({ theme: 'light' });
+    control.updateOptions({ theme: 'auto' });
+
+    const [, onChange] = query.addEventListener.mock.calls[0];
+    query.matches = true;
+    onChange();
+    expect(has(container, 'dark')).toBe(true);
+  });
+
+  it('only subscribes to OS changes while in auto mode', () => {
+    const query = mockDarkMode(false);
+    const { control } = setup({ theme: 'light' });
+    expect(window.matchMedia).not.toHaveBeenCalled();
+
+    control.updateOptions({ theme: 'auto' });
+    control.updateOptions({ maxHeight: 100 });
+    expect(query.addEventListener).toHaveBeenCalledTimes(1);
+
+    control.updateOptions({ theme: 'dark' });
+    expect(query.removeEventListener).toHaveBeenCalledTimes(1);
+  });
+
+  it('works where matchMedia is unavailable', () => {
+    Object.defineProperty(window, 'matchMedia', {
+      writable: true,
+      value: undefined,
+    });
+    expect(has(setup({ theme: 'auto' }).container, 'light')).toBe(true);
+  });
+});
+
+describe('empty styles', () => {
+  it('renders nothing and cannot open', () => {
+    const { container, control } = setup({ styles: [] });
+    expect(container.childElementCount).toBe(0);
+    hover(container);
+    expect(() => control.updateOptions({ theme: 'dark' })).not.toThrow();
+    expect(container.childElementCount).toBe(0);
+  });
+
+  it('closes when emptied, and recovers when styles return', () => {
+    const { container, control, isOpen, trigger } = setup();
+    hover(container);
+    control.updateOptions({ styles: [] });
+    expect(container.childElementCount).toBe(0);
+
+    control.updateOptions({ styles });
+    expect(isOpen()).toBe(false);
+    expect(trigger().textContent).toBe('Streets');
+  });
+});
+
+describe('lifecycle', () => {
+  it('removes the element and its document listener', () => {
+    const remove = jest.spyOn(document, 'removeEventListener');
+    const { control, container } = setup();
+    hover(container);
+    control.onRemove();
+    expect(container.isConnected).toBe(false);
+    expect(remove).toHaveBeenCalledWith(
+      'pointerdown',
+      expect.any(Function),
+      true
+    );
+  });
+
+  it('only listens on the document while open', () => {
+    const add = jest.spyOn(document, 'addEventListener');
+    const remove = jest.spyOn(document, 'removeEventListener');
+    const { container } = setup();
+    expect(add).not.toHaveBeenCalledWith(
+      'pointerdown',
+      expect.any(Function),
+      true
+    );
+
+    hover(container);
+    expect(add).toHaveBeenCalledWith('pointerdown', expect.any(Function), true);
+    unhover(container);
+    expect(remove).toHaveBeenCalledWith(
+      'pointerdown',
+      expect.any(Function),
+      true
+    );
+  });
+
+  it('is safe to remove twice, and events after removal are harmless', () => {
+    const { control, container } = setup();
+    const items = container.querySelectorAll<HTMLElement>('[role="option"]');
+    hover(container);
+    control.onRemove();
+    expect(() => {
       control.onRemove();
-    });
-
-    it('should update activeStyleId and re-render', () => {
-      control.updateOptions({ activeStyleId: 'satellite' });
-
-      const activeItem = container.querySelector('[aria-selected="true"]');
-      expect(activeItem?.querySelector('span')?.textContent).toBe('Satellite');
-    });
-
-    it('should update theme', () => {
+      unhover(container);
+      hover(container);
+      items[1].click();
+      pointer(document.body, 'pointerdown', 'mouse');
       control.updateOptions({ theme: 'dark' });
-
-      expect(container.classList.contains('style-switcher-dark')).toBe(true);
-    });
-
-    it('should update classNames', () => {
-      control.updateOptions({ classNames: { item: 'updated-item' } });
-
-      container.dispatchEvent(new Event('mouseenter'));
-      const items = container.querySelectorAll('[role="option"]');
-      expect(items[0].classList.contains('updated-item')).toBe(true);
-    });
-
-    it('should not throw when called before onAdd', () => {
-      const earlyControl = new StyleSwitcherControl({ styles: mockStyles });
-      expect(() => {
-        earlyControl.updateOptions({ activeStyleId: 'satellite' });
-      }).not.toThrow();
-    });
-
-    it('should handle empty styles gracefully (no crash)', () => {
-      expect(() => {
-        control.updateOptions({ styles: [] });
-      }).not.toThrow();
-    });
-
-    it('should warn and keep previous selection when activeStyleId is invalid', () => {
-      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
-
-      control.updateOptions({ activeStyleId: 'does-not-exist' });
-
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Keeping previous selection.')
-      );
-      // Visible selection should remain on the original 'streets' style.
-      const activeItem = container.querySelector('[aria-selected="true"]');
-      expect(activeItem?.querySelector('span')?.textContent).toBe('Streets');
-
-      consoleSpy.mockRestore();
-    });
-
-    it('should fall back to first new style when both styles and an invalid activeStyleId are provided', () => {
-      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
-
-      const newStyles: StyleItem[] = [
-        { id: 'a', name: 'A', image: 'a.png', styleUrl: 'urlA' },
-        { id: 'b', name: 'B', image: 'b.png', styleUrl: 'urlB' },
-      ];
-      control.updateOptions({ styles: newStyles, activeStyleId: 'nope' });
-
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Using first style instead.')
-      );
-      // Should display the first style of the new list.
-      const activeItem = container.querySelector('[aria-selected="true"]');
-      expect(activeItem?.querySelector('span')?.textContent).toBe('A');
-
-      consoleSpy.mockRestore();
-    });
-
-    it('should fall back to first style when styles list replaces and previous active is removed', () => {
-      const newStyles: StyleItem[] = [
-        { id: 'x', name: 'X', image: 'x.png', styleUrl: 'urlX' },
-        { id: 'y', name: 'Y', image: 'y.png', styleUrl: 'urlY' },
-      ];
-      control.updateOptions({ styles: newStyles });
-
-      const activeItem = container.querySelector('[aria-selected="true"]');
-      expect(activeItem?.querySelector('span')?.textContent).toBe('X');
-    });
-
-    it('should keep current selection when styles list changes but contains the active id', () => {
-      // 'streets' is the original active id; new list still includes it.
-      const newStyles: StyleItem[] = [
-        { id: 'streets', name: 'Streets', image: 's.png', styleUrl: 'urlS' },
-        { id: 'extra', name: 'Extra', image: 'e.png', styleUrl: 'urlE' },
-      ];
-      control.updateOptions({ styles: newStyles });
-
-      const activeItem = container.querySelector('[aria-selected="true"]');
-      expect(activeItem?.querySelector('span')?.textContent).toBe('Streets');
-    });
-
-    it('should sync the dir attribute when rtl toggles', () => {
-      expect(container.getAttribute('dir')).toBeNull();
-
-      control.updateOptions({ rtl: true });
-      expect(container.getAttribute('dir')).toBe('rtl');
-
-      control.updateOptions({ rtl: false });
-      expect(container.getAttribute('dir')).toBeNull();
-    });
-
-    it('should produce valid `from` after styles update removes the previous active id', () => {
-      const onBeforeStyleChange = jest.fn();
-      const onAfterStyleChange = jest.fn();
-      const ctrl = new StyleSwitcherControl({
-        styles: mockStyles,
-        activeStyleId: 'streets',
-        onBeforeStyleChange,
-        onAfterStyleChange,
-      });
-      const ctrlContainer = ctrl.onAdd(mockMap);
-      document.body.appendChild(ctrlContainer);
-
-      // Replace styles so the old active id no longer exists.
-      const replacement: StyleItem[] = [
-        { id: 'one', name: 'One', image: '1.png', styleUrl: 'url1' },
-        { id: 'two', name: 'Two', image: '2.png', styleUrl: 'url2' },
-      ];
-      ctrl.updateOptions({ styles: replacement });
-
-      // Now click the second item.
-      ctrlContainer.dispatchEvent(new Event('mouseenter'));
-      const list = ctrlContainer.querySelector('.style-switcher-list');
-      const items = list?.querySelectorAll('[role="option"]');
-      (items?.[1] as HTMLElement).click();
-
-      // Callbacks should fire with a defined `from` (the new fallback first style).
-      expect(onBeforeStyleChange).toHaveBeenCalledWith(
-        replacement[0],
-        replacement[1]
-      );
-      expect(onAfterStyleChange).toHaveBeenCalledWith(
-        replacement[0],
-        replacement[1]
-      );
-
-      ctrl.onRemove();
-    });
+    }).not.toThrow();
   });
 
-  describe('Constructor activeStyleId fallback', () => {
-    it('should set _activeStyleId to first style when activeStyleId is invalid (callbacks see valid `from`)', () => {
-      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
-      const onBeforeStyleChange = jest.fn();
-      const onAfterStyleChange = jest.fn();
+  it('can be re-added after removal, collapsed and with its selection', () => {
+    const { control, container, items } = setup();
+    hover(container);
+    items()[1].click();
+    control.onRemove();
 
-      const control = new StyleSwitcherControl({
-        styles: mockStyles,
-        activeStyleId: 'unknown',
-        onBeforeStyleChange,
-        onAfterStyleChange,
-      });
-      const container = control.onAdd(mockMap);
-      document.body.appendChild(container);
-
-      // The visually-selected item should be the first style.
-      const activeItem = container.querySelector('[aria-selected="true"]');
-      expect(activeItem?.querySelector('span')?.textContent).toBe('Streets');
-
-      // Now click another style; `from` must be the first style (Streets), not undefined.
-      container.dispatchEvent(new Event('mouseenter'));
-      const list = container.querySelector('.style-switcher-list');
-      const items = list?.querySelectorAll('[role="option"]');
-      (items?.[1] as HTMLElement).click();
-
-      expect(onBeforeStyleChange).toHaveBeenCalledWith(
-        mockStyles[0],
-        mockStyles[1]
-      );
-      expect(onAfterStyleChange).toHaveBeenCalledWith(
-        mockStyles[0],
-        mockStyles[1]
-      );
-
-      consoleSpy.mockRestore();
-      control.onRemove();
-    });
-  });
-
-  describe('Empty styles', () => {
-    it('should not crash when onAdd is called with empty styles', () => {
-      const control = new StyleSwitcherControl({ styles: [] });
-      expect(() => {
-        const container = control.onAdd(mockMap);
-        document.body.appendChild(container);
-        control.onRemove();
-      }).not.toThrow();
-    });
+    const next = control.onAdd({});
+    expect(next).not.toBe(container);
+    expect(next.querySelector('[role="combobox"]')?.textContent).toBe(
+      'Satellite'
+    );
+    expect(
+      next.querySelector('[role="combobox"]')?.getAttribute('aria-expanded')
+    ).toBe('false');
+    expect(next.querySelector<HTMLElement>('[role="listbox"]')?.hidden).toBe(
+      true
+    );
+    expect(next.querySelectorAll('[role="option"]')).toHaveLength(
+      styles.length
+    );
   });
 });

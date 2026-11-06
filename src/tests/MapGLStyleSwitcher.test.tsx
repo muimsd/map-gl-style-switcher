@@ -472,6 +472,54 @@ describe('MapGLStyleSwitcher', () => {
       );
     });
 
+    test('should not call updateOptions on mount', () => {
+      render(<MapGLStyleSwitcher styles={mockStyles} />);
+
+      expect(mockStyleSwitcherControl).toHaveBeenCalled();
+      expect(mockInstance.updateOptions).not.toHaveBeenCalled();
+    });
+
+    test('should update the instance useControl returned, not a discarded one', () => {
+      const mounted = { updateOptions: jest.fn() };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      mockUseControl.mockImplementation((factory: any): any => {
+        factory(); // StrictMode: a second invocation whose result is dropped
+        return mounted;
+      });
+      const { rerender } = render(
+        <MapGLStyleSwitcher styles={mockStyles} theme="light" />
+      );
+
+      rerender(<MapGLStyleSwitcher styles={mockStyles} theme="dark" />);
+
+      expect(mounted.updateOptions).toHaveBeenCalledWith(
+        expect.objectContaining({ theme: 'dark' })
+      );
+      expect(mockInstance.updateOptions).not.toHaveBeenCalled();
+    });
+
+    test('should not re-send an unchanged activeStyleId', () => {
+      const { rerender } = render(
+        <MapGLStyleSwitcher
+          styles={mockStyles}
+          activeStyleId="voyager"
+          theme="light"
+        />
+      );
+
+      rerender(
+        <MapGLStyleSwitcher
+          styles={mockStyles}
+          activeStyleId="voyager"
+          theme="dark"
+        />
+      );
+
+      expect(
+        mockInstance.updateOptions.mock.calls[0][0].activeStyleId
+      ).toBeUndefined();
+    });
+
     test('should call updateOptions when activeStyleId changes', () => {
       const { rerender } = render(
         <MapGLStyleSwitcher styles={mockStyles} activeStyleId="voyager" />

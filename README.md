@@ -32,15 +32,16 @@ A TypeScript control for switching Mapbox GL / MapLibre GL map styles. Easily ad
 - **React hook for custom map instances**
 - Floating style switcher in any corner (via map.addControl position)
 - Support for multiple map styles with thumbnails
-- Expand/collapse on hover with smooth animations
+- Expand/collapse on hover or tap with smooth animations
+- Lightweight thumbnails: list images load on first open and are never re-created
 - Dark/light/auto theme support — `theme: 'auto'` reacts to OS preference changes in real time
 - RTL text support for Arabic/Hebrew interfaces
 - Configurable display options (show/hide labels and images)
 - Callbacks for before/after style change
 - `updateOptions()` for imperative option updates after mount
-- Fully customizable CSS classes
+- Fully customizable CSS classes and colour variables
 - TypeScript support
-- Accessibility features (ARIA labels, keyboard navigation)
+- Accessible: WAI-ARIA select-only combobox with full keyboard support
 - ESM-only package (tree-shakeable, no CommonJS bundle)
 - Comprehensive test coverage
 
@@ -103,7 +104,7 @@ map.addControl(control, 'bottom-left');
 Use this when you manage the map instance yourself (e.g., inside `useEffect`):
 
 ```tsx
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import maplibregl from 'maplibre-gl';
 import { useStyleSwitcher, type StyleItem } from 'map-gl-style-switcher/react';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -115,25 +116,26 @@ const styles: StyleItem[] = [
 
 function MapComponent() {
   const mapContainer = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<maplibregl.Map | null>(null);
+  const [map, setMap] = useState<maplibregl.Map | null>(null);
 
   useEffect(() => {
     if (!mapContainer.current) return;
-    mapRef.current = new maplibregl.Map({
+    const instance = new maplibregl.Map({
       container: mapContainer.current,
       style: styles[0].styleUrl,
       center: [0, 0],
       zoom: 2,
     });
-    return () => mapRef.current?.remove();
+    setMap(instance);
+    return () => instance.remove();
   }, []);
 
-  useStyleSwitcher(mapRef.current, {
+  useStyleSwitcher(map, {
     styles,
     theme: 'auto',
     position: 'bottom-left',
     onAfterStyleChange: (_from, to) => {
-      mapRef.current?.setStyle(to.styleUrl);
+      map?.setStyle(to.styleUrl);
     },
   });
 
@@ -141,7 +143,7 @@ function MapComponent() {
 }
 ```
 
-> **Tip:** The hook recreates the control whenever options change (deep comparison via JSON serialisation). Pass stable object references or memoize options if performance is critical.
+> **Note:** Keep the map in state, not in a ref: changing `ref.current` does not re-render, so the hook would never see the map. Option changes update the existing control, and callbacks always use their latest version. The hook returns the control, or `null` until it has been added.
 
 ### React — `MapGLStyleSwitcher` component (react-map-gl)
 
@@ -215,7 +217,7 @@ interface StyleSwitcherControlOptions {
 interface StyleItem {
   id: string; // Unique identifier
   name: string; // Display name
-  image: string; // Thumbnail URL or data URI
+  image: string; // Thumbnail URL or data URI (shown at 32×32, so use about 96×96)
   styleUrl: string; // MapLibre/Mapbox style URL
   description?: string; // Optional tooltip text
 }
@@ -225,6 +227,7 @@ interface StyleSwitcherClassNames {
   list: string; // Expanded list container class
   item: string; // Individual style item class
   itemSelected: string; // Selected item class
+  itemActive: string; // Option highlighted by keyboard navigation
   itemHideLabel: string; // No-label utility class
   dark: string; // Dark theme class
   light: string; // Light theme class
@@ -244,6 +247,17 @@ interface StyleSwitcherClassNames {
   - `'default'`: Solid container with shadow (default)
   - `'outlined'`: Translucent backdrop with a visible border on the container and on each item — ideal when you want a lighter chrome over a busy map. The class applied for this variant is configurable via `classNames.outlined`.
 - **`rtl`**: Enables right-to-left layout for Arabic/Hebrew interfaces.
+- **`image`**: Thumbnails render at 32×32 CSS pixels, so a 96×96 image is sharp even on 3× screens. Keep them small: full-size screenshots waste megabytes on an icon. The bundled `public/*.png` thumbnails are 5–8 KB each.
+
+### Keyboard support
+
+| Key                     | Collapsed     | Expanded                               |
+| ----------------------- | ------------- | -------------------------------------- |
+| `Enter` / `Space`       | Open the list | Select the highlighted style and close |
+| `ArrowDown` / `ArrowUp` | Open the list | Move the highlight                     |
+| `Home` / `End`          | -             | Highlight the first / last style       |
+| `Escape`                | -             | Close without selecting                |
+| `Tab`                   | Leave         | Close and leave                        |
 
 ### Imperative updates — `updateOptions()`
 
@@ -260,7 +274,7 @@ control.updateOptions({ activeStyleId: 'positron' });
 control.updateOptions({ theme: 'dark', showLabels: false });
 ```
 
-Only the keys you pass are updated; all others remain unchanged. If the control has already been added to the map, the UI re-renders immediately.
+Only the keys you pass are updated; all others remain unchanged. A key explicitly set to `undefined` is restored to its default (`styles` and `activeStyleId` keep their current value). If the control has already been added to the map, the UI updates immediately.
 
 ## Customizing CSS Classes
 
@@ -281,6 +295,19 @@ const control = new StyleSwitcherControl({
   },
 });
 ```
+
+## Customizing Colours
+
+Colours are CSS custom properties, so most restyling needs no class overrides:
+
+```css
+.style-switcher {
+  --style-switcher-selected-border: rebeccapurple;
+  --style-switcher-focus: rebeccapurple;
+}
+```
+
+See the top of `map-gl-style-switcher.css` for the full list.
 
 ## Contributing
 

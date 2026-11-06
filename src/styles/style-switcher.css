@@ -1,159 +1,103 @@
-/* Override MapLibre GL and Mapbox GL control styles for style switcher */
+/* Colours are custom properties, so they can be overridden from your own CSS:
+   .style-switcher { --style-switcher-selected-border: rebeccapurple; }
+   Defaults live on the root so items stay styled when classNames.container
+   replaces the .style-switcher class. */
+:root,
+:host {
+  --style-switcher-bg: #fff;
+  --style-switcher-fg: #333;
+  --style-switcher-border: #ddd;
+  --style-switcher-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  --style-switcher-backdrop: none;
+  --style-switcher-item-bg: transparent;
+  --style-switcher-item-border: transparent;
+  --style-switcher-hover-bg: #f0f8ff;
+  --style-switcher-hover-border: transparent;
+  --style-switcher-selected-bg: #e6f0ff;
+  --style-switcher-selected-border: #0066cc;
+  --style-switcher-focus: #0066cc;
+  --style-switcher-image-bg: #f0f0f0;
+  --style-switcher-image-border: #ddd;
+  --style-switcher-scrollbar-track: #f0f0f0;
+  --style-switcher-scrollbar-thumb: #ccc;
+}
+
+.style-switcher-dark {
+  --style-switcher-bg: #2a2a2a;
+  --style-switcher-fg: #fff;
+  --style-switcher-border: #444;
+  --style-switcher-hover-bg: #333;
+  --style-switcher-selected-bg: #404040;
+  --style-switcher-selected-border: #666;
+  --style-switcher-focus: #6699cc;
+  --style-switcher-image-bg: #555;
+  --style-switcher-image-border: #666;
+  --style-switcher-scrollbar-track: #2a2a2a;
+  --style-switcher-scrollbar-thumb: #555;
+}
+
+/* Translucent backdrop keeps items legible over the map; each item is outlined
+   instead of filled. */
+.style-switcher-outlined {
+  --style-switcher-bg: rgba(255, 255, 255, 0.9);
+  --style-switcher-border: #ccc;
+  --style-switcher-shadow: none;
+  --style-switcher-backdrop: blur(6px);
+  --style-switcher-item-border: #ddd;
+  --style-switcher-hover-bg: transparent;
+  --style-switcher-hover-border: #999;
+  --style-switcher-selected-bg: transparent;
+  --style-switcher-image-bg: transparent;
+  --style-switcher-image-border: #ccc;
+  --style-switcher-scrollbar-track: transparent;
+}
+
+.style-switcher-dark.style-switcher-outlined {
+  --style-switcher-bg: rgba(42, 42, 42, 0.9);
+  --style-switcher-border: #555;
+  --style-switcher-item-border: #555;
+  --style-switcher-hover-border: #888;
+  --style-switcher-selected-border: #6699cc;
+  --style-switcher-image-border: #555;
+  --style-switcher-scrollbar-thumb: #555;
+}
+
+/* Doubled class selectors win over the map library's own control styles. */
 .maplibregl-ctrl.style-switcher,
 .mapboxgl-ctrl.style-switcher {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-  background: #fff;
-  border-radius: 6px;
-  padding: 4px;
-  margin: 8px;
-  transition: box-shadow 0.2s;
-  min-width: unset;
+  box-sizing: border-box;
   width: auto;
-  user-select: none;
+  min-width: unset;
+  margin: 8px;
+  padding: 4px;
+  color: var(--style-switcher-fg);
+  background: var(--style-switcher-bg);
+  border: 1px solid var(--style-switcher-border);
+  border-radius: 6px;
+  box-shadow: var(--style-switcher-shadow);
+  -webkit-backdrop-filter: var(--style-switcher-backdrop);
+  backdrop-filter: var(--style-switcher-backdrop);
   cursor: pointer;
+  user-select: none;
 }
 
-/* RTL support */
-[dir='rtl'] .maplibregl-ctrl.style-switcher,
-[dir='rtl'] .mapboxgl-ctrl.style-switcher,
-.maplibregl-ctrl.style-switcher[dir='rtl'],
-.mapboxgl-ctrl.style-switcher[dir='rtl'] {
-  direction: rtl;
-}
-
-/* Theme variants */
-.maplibregl-ctrl.style-switcher.style-switcher-dark,
-.mapboxgl-ctrl.style-switcher.style-switcher-dark {
-  background: #2a2a2a;
-  color: #fff;
-  border: 1px solid #444;
-}
-
-.maplibregl-ctrl.style-switcher.style-switcher-light,
-.mapboxgl-ctrl.style-switcher.style-switcher-light {
-  background: #ffffff;
-  color: #333;
-  border: 1px solid #ddd;
-}
-
-/* List container */
 .style-switcher-list {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 4px 0px;
-  overflow-y: auto;
-  overflow-x: hidden;
+  padding: 4px 0;
+  overflow: hidden auto;
+  animation: style-switcher-fade-in ease-in-out;
+  scrollbar-width: thin;
+  scrollbar-color: var(--style-switcher-scrollbar-thumb)
+    var(--style-switcher-scrollbar-track);
 }
 
-/* RTL support for list */
-[dir='rtl'] .style-switcher-list,
-.style-switcher-list[dir='rtl'] {
-  direction: rtl;
+.style-switcher-list[hidden] {
+  display: none;
 }
 
-/* Individual style items */
-.style-switcher-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-  padding: 2px 4px;
-  border-radius: 4px;
-  transition: all 0.2s ease;
-  border: 2px solid transparent;
-  position: relative;
-  overflow: hidden;
-}
-
-.style-switcher-item:hover {
-  background: #f0f8ff;
-  transform: translateY(-1px);
-}
-
-.style-switcher-item.selected {
-  background: #e6f0ff;
-  font-weight: 600;
-  border: 1px solid #0066cc;
-}
-
-/* When labels are hidden, shrink items to image size only */
-.style-switcher-item:not(:has(span)) {
-  min-width: unset;
-  width: 40px;
-  justify-content: center;
-  padding-left: 0;
-  padding-right: 0;
-}
-
-/* Hide label span if showLabels is false (for safety) */
-.style-switcher-item.hide-label span {
-  display: none !important;
-}
-
-/* Dark theme item styles */
-.maplibregl-ctrl.style-switcher.style-switcher-dark .style-switcher-item:hover,
-.mapboxgl-ctrl.style-switcher.style-switcher-dark .style-switcher-item:hover {
-  background: #333;
-}
-
-.maplibregl-ctrl.style-switcher.style-switcher-dark
-  .style-switcher-item.selected,
-.mapboxgl-ctrl.style-switcher.style-switcher-dark
-  .style-switcher-item.selected {
-  background: #404040;
-  border-color: #666;
-}
-
-/* Image styles */
-.style-switcher-item img {
-  width: 32px;
-  height: 32px;
-  object-fit: cover;
-  border-radius: 2px;
-  background: #f0f0f0;
-  border: 1px solid #ddd;
-  flex-shrink: 0;
-  transition: all 0.2s ease;
-}
-
-/* Image styles - dark theme */
-.maplibregl-ctrl.style-switcher.style-switcher-dark .style-switcher-item img,
-.mapboxgl-ctrl.style-switcher.style-switcher-dark .style-switcher-item img {
-  background: #555;
-  border-color: #666;
-}
-
-/* Text styles */
-.style-switcher-item span {
-  font-size: 14px;
-  line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  flex: 1;
-  min-width: 0;
-}
-
-/* Accessibility improvements */
-.maplibregl-ctrl.style-switcher:focus,
-.mapboxgl-ctrl.style-switcher:focus {
-  outline: 2px solid #0066cc;
-  outline-offset: 1px;
-}
-
-.style-switcher-item:focus {
-  outline: 2px solid #0066cc;
-  outline-offset: 1px;
-}
-
-/* Animation for expand/collapse */
-.style-switcher-list {
-  animation-name: fadeIn;
-  animation-timing-function: ease-in-out;
-}
-
-@keyframes fadeIn {
+@keyframes style-switcher-fade-in {
   from {
     opacity: 0;
     transform: translateY(-10px);
@@ -164,116 +108,72 @@
   }
 }
 
-/* Scrollbar styling */
-.style-switcher-list::-webkit-scrollbar {
-  width: 4px;
+@media (prefers-reduced-motion: reduce) {
+  .style-switcher-list {
+    animation: none;
+  }
 }
 
-.style-switcher-list::-webkit-scrollbar-track {
-  background: #f0f0f0;
-  border-radius: 2px;
-}
-
-.style-switcher-list::-webkit-scrollbar-thumb {
-  background: #ccc;
-  border-radius: 2px;
-}
-
-/* Scrollbar styling - dark theme */
-.maplibregl-ctrl.style-switcher.style-switcher-dark
-  .style-switcher-list::-webkit-scrollbar-track,
-.mapboxgl-ctrl.style-switcher.style-switcher-dark
-  .style-switcher-list::-webkit-scrollbar-track {
-  background: #2a2a2a;
-}
-
-.maplibregl-ctrl.style-switcher.style-switcher-dark
-  .style-switcher-list::-webkit-scrollbar-thumb,
-.mapboxgl-ctrl.style-switcher.style-switcher-dark
-  .style-switcher-list::-webkit-scrollbar-thumb {
-  background: #555;
-}
-
-/* ========================================
-   Outlined design variant
-   ======================================== */
-
-/* Container: translucent backdrop so items remain legible over the map,
-   while keeping the visible border and no box-shadow that defines this variant. */
-.maplibregl-ctrl.style-switcher.style-switcher-outlined,
-.mapboxgl-ctrl.style-switcher.style-switcher-outlined {
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  box-shadow: none;
-  border: 1.5px solid #ccc;
-}
-
-/* Items: border on each item, no background fill */
-.style-switcher-outlined .style-switcher-item {
-  background: transparent;
-  border: 1.5px solid #ddd;
+.style-switcher-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 4px;
+  overflow: hidden;
+  background: var(--style-switcher-item-bg);
+  border: 1px solid var(--style-switcher-item-border);
   border-radius: 4px;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
 }
 
-.style-switcher-outlined .style-switcher-item:hover {
-  background: transparent;
-  border-color: #999;
-  transform: none;
+.style-switcher-item:hover {
+  background: var(--style-switcher-hover-bg);
+  border-color: var(--style-switcher-hover-border);
 }
 
-/* Selected item: stronger border, no background fill */
-.style-switcher-outlined .style-switcher-item.selected {
-  background: transparent;
-  border-color: #0066cc;
-  border-width: 1.5px;
+.style-switcher-item.selected {
+  font-weight: 600;
+  background: var(--style-switcher-selected-bg);
+  border-color: var(--style-switcher-selected-border);
 }
 
-/* Images: border style matching the outlined aesthetic */
-.style-switcher-outlined .style-switcher-item img {
-  border: 1.5px solid #ccc;
-  border-radius: 3px;
-  background: transparent;
+.style-switcher-item:focus {
+  outline: none;
 }
 
-/* Dark + outlined combo: translucent dark backdrop for legibility, lighter borders for contrast */
-.maplibregl-ctrl.style-switcher.style-switcher-dark.style-switcher-outlined,
-.mapboxgl-ctrl.style-switcher.style-switcher-dark.style-switcher-outlined {
-  background: rgba(42, 42, 42, 0.9);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  border-color: #555;
+.style-switcher-item:focus-visible,
+.style-switcher-item.active {
+  outline: 2px solid var(--style-switcher-focus);
+  outline-offset: -2px;
 }
 
-.style-switcher-dark.style-switcher-outlined .style-switcher-item {
-  border-color: #555;
+.style-switcher-item.hide-label {
+  justify-content: center;
+  padding-right: 2px;
+  padding-left: 2px;
 }
 
-.style-switcher-dark.style-switcher-outlined .style-switcher-item:hover {
-  background: transparent;
-  border-color: #888;
+.style-switcher-item img {
+  flex-shrink: 0;
+  box-sizing: border-box;
+  width: 32px;
+  height: 32px;
+  object-fit: cover;
+  background: var(--style-switcher-image-bg);
+  border: 1px solid var(--style-switcher-image-border);
+  border-radius: 2px;
 }
 
-.style-switcher-dark.style-switcher-outlined .style-switcher-item.selected {
-  background: transparent;
-  border-color: #6699cc;
-}
-
-.style-switcher-dark.style-switcher-outlined .style-switcher-item img {
-  border-color: #555;
-  background: transparent;
-}
-
-/* Scrollbar: subtle styling for outlined variant */
-.style-switcher-outlined .style-switcher-list::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.style-switcher-outlined .style-switcher-list::-webkit-scrollbar-thumb {
-  background: #ccc;
-}
-
-.style-switcher-dark.style-switcher-outlined
-  .style-switcher-list::-webkit-scrollbar-thumb {
-  background: #555;
+.style-switcher-item span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 14px;
+  line-height: 1.2;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }

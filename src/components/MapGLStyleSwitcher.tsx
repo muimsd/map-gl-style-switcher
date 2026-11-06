@@ -1,7 +1,10 @@
 import React, { useEffect, useRef } from 'react';
 import { useControl } from 'react-map-gl/maplibre';
 import { StyleSwitcherControl } from './StyleSwitcherControl';
-import type { StyleItem } from './StyleSwitcherControl';
+import type {
+  StyleItem,
+  StyleSwitcherClassNames,
+} from './StyleSwitcherControl';
 
 export interface MapGLStyleSwitcherProps {
   /** Array of map styles to choose from */
@@ -25,16 +28,7 @@ export interface MapGLStyleSwitcherProps {
   /** Right-to-left layout */
   rtl?: boolean;
   /** Custom CSS class names */
-  classNames?: Partial<{
-    container: string;
-    list: string;
-    item: string;
-    itemSelected: string;
-    itemHideLabel: string;
-    dark: string;
-    light: string;
-    outlined: string;
-  }>;
+  classNames?: Partial<StyleSwitcherClassNames>;
   /** Callback when style is about to change */
   onBeforeStyleChange?: (from: StyleItem, to: StyleItem) => void;
   /** Callback when style has changed */
@@ -128,8 +122,14 @@ export const MapGLStyleSwitcher: React.FC<MapGLStyleSwitcherProps> = ({
   );
 
   // Propagate non-callback prop changes to the existing control instance.
-  // Callbacks are excluded because they are handled via refs above.
+  // Callbacks are excluded because they are handled via refs above. The first
+  // run is skipped: the factory above has just received these same values.
+  const isMount = useRef(true);
   useEffect(() => {
+    if (isMount.current) {
+      isMount.current = false;
+      return;
+    }
     controlRef.current?.updateOptions({
       styles,
       activeStyleId,

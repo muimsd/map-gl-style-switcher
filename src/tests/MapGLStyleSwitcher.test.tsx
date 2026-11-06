@@ -472,6 +472,13 @@ describe('MapGLStyleSwitcher', () => {
       );
     });
 
+    test('should not call updateOptions on mount', () => {
+      render(<MapGLStyleSwitcher styles={mockStyles} />);
+
+      expect(mockStyleSwitcherControl).toHaveBeenCalled();
+      expect(mockInstance.updateOptions).not.toHaveBeenCalled();
+    });
+
     test('should call updateOptions when activeStyleId changes', () => {
       const { rerender } = render(
         <MapGLStyleSwitcher styles={mockStyles} activeStyleId="voyager" />

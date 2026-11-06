@@ -51,7 +51,7 @@ describe('useStyleSwitcher', () => {
     mockControlInstance = {
       onAdd: jest.fn(),
       onRemove: jest.fn(),
-      getDefaultPosition: jest.fn(() => 'top-right'),
+      updateOptions: jest.fn(),
     };
 
     MockedStyleSwitcherControl.mockImplementation(() => mockControlInstance);
@@ -81,14 +81,38 @@ describe('useStyleSwitcher', () => {
       })
     );
 
-    expect(MockedStyleSwitcherControl).toHaveBeenCalledWith({
-      styles: mockStyles,
-      activeStyleId: 'voyager',
-    });
+    expect(MockedStyleSwitcherControl).toHaveBeenCalledWith(
+      expect.objectContaining({
+        styles: mockStyles,
+        activeStyleId: 'voyager',
+      })
+    );
     expect(mockMap.addControl).toHaveBeenCalledWith(
       mockControlInstance,
       'top-right'
     );
+  });
+
+  test('should return the control once it has been added', () => {
+    const { result } = renderHook(() =>
+      useStyleSwitcher(mockMap, { styles: mockStyles })
+    );
+
+    expect(result.current).toBe(mockControlInstance);
+  });
+
+  test('should add the control when the map becomes available', () => {
+    const { rerender, result } = renderHook(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ({ map }: { map: any }) => useStyleSwitcher(map, { styles: mockStyles }),
+      { initialProps: { map: null } }
+    );
+    expect(result.current).toBeNull();
+
+    rerender({ map: mockMap });
+
+    expect(mockMap.addControl).toHaveBeenCalledTimes(1);
+    expect(result.current).toBe(mockControlInstance);
   });
 
   test('should use custom position when provided', () => {
@@ -158,45 +182,89 @@ describe('useStyleSwitcher', () => {
     );
   });
 
-  test('should recreate control when options change', () => {
-    const initialOptions = {
-      styles: mockStyles,
-      activeStyleId: 'voyager',
-    };
+  describe('option changes', () => {
+    const render = (options: object) =>
+      renderHook(
+        ({ options }) =>
+          useStyleSwitcher(mockMap, { styles: mockStyles, ...options }),
+        { initialProps: { options } }
+      );
+
+    test('should update the existing control instead of recreating it', () => {
+      const { rerender } = render({ activeStyleId: 'voyager' });
+
+      rerender({ options: { activeStyleId: 'positron', theme: 'dark' } });
+
+      expect(MockedStyleSwitcherControl).toHaveBeenCalledTimes(1);
+      expect(mockMap.addControl).toHaveBeenCalledTimes(1);
+      expect(mockMap.removeControl).not.toHaveBeenCalled();
+      expect(mockControlInstance.updateOptions).toHaveBeenCalledWith(
+        expect.objectContaining({
+          styles: mockStyles,
+          activeStyleId: 'positron',
+          theme: 'dark',
+        })
+      );
+    });
+
+    test('should not update on mount or when options are deep-equal', () => {
+      const { rerender } = render({ theme: 'dark' });
+      rerender({ options: { theme: 'dark' } });
+
+      expect(mockControlInstance.updateOptions).not.toHaveBeenCalled();
+    });
+
+    test('should restore the default of an option that is dropped', () => {
+      const { rerender } = render({ theme: 'dark', maxHeight: 100 });
+
+      rerender({ options: { maxHeight: 100 } });
+
+      const update = mockControlInstance.updateOptions.mock.calls[0][0];
+      expect(update).toHaveProperty('theme', undefined);
+      expect(update.maxHeight).toBe(100);
+    });
+
+    test('should not pass callbacks to updateOptions', () => {
+      const { rerender } = render({ theme: 'dark' });
+
+      rerender({
+        options: { theme: 'light', onAfterStyleChange: jest.fn() },
+      });
+
+      const update = mockControlInstance.updateOptions.mock.calls[0][0];
+      expect(update).not.toHaveProperty('onAfterStyleChange');
+      expect(update).not.toHaveProperty('onBeforeStyleChange');
+    });
+  });
+
+  test('should always call the latest callbacks without recreating', () => {
+    const stale = jest.fn();
+    const latest = jest.fn();
+    const staleBefore = jest.fn();
+    const latestBefore = jest.fn();
 
     const { rerender } = renderHook(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ({ options }: { options: any }) => useStyleSwitcher(mockMap, options),
-      {
-        initialProps: {
-          options: initialOptions,
-        },
-      }
+      ({ onAfter, onBefore }) =>
+        useStyleSwitcher(mockMap, {
+          styles: mockStyles,
+          onAfterStyleChange: onAfter,
+          onBeforeStyleChange: onBefore,
+        }),
+      { initialProps: { onAfter: stale, onBefore: staleBefore } }
     );
+    rerender({ onAfter: latest, onBefore: latestBefore });
 
     expect(MockedStyleSwitcherControl).toHaveBeenCalledTimes(1);
-    expect(mockMap.addControl).toHaveBeenCalledTimes(1);
+    expect(mockControlInstance.updateOptions).not.toHaveBeenCalled();
 
-    // Change options
-    const newOptions = {
-      styles: mockStyles,
-      activeStyleId: 'positron',
-      theme: 'dark' as const,
-    };
+    const options = MockedStyleSwitcherControl.mock.calls[0][0];
+    options.onBeforeStyleChange?.(mockStyles[0], mockStyles[1]);
+    options.onAfterStyleChange?.(mockStyles[0], mockStyles[1]);
 
-    rerender({
-      options: newOptions,
-    });
-
-    // Should remove old control and add new one
-    expect(mockMap.removeControl).toHaveBeenCalledWith(mockControlInstance);
-    expect(MockedStyleSwitcherControl).toHaveBeenCalledTimes(2);
-    expect(MockedStyleSwitcherControl).toHaveBeenLastCalledWith({
-      styles: mockStyles,
-      activeStyleId: 'positron',
-      theme: 'dark',
-    });
-    expect(mockMap.addControl).toHaveBeenCalledTimes(2);
+    expect(stale).not.toHaveBeenCalled();
+    expect(staleBefore).not.toHaveBeenCalled();
+    expect(latest).toHaveBeenCalledWith(mockStyles[0], mockStyles[1]);
+    expect(latestBefore).toHaveBeenCalledWith(mockStyles[0], mockStyles[1]);
   });
 
   test('should recreate control when position changes', () => {
@@ -248,8 +316,8 @@ describe('useStyleSwitcher', () => {
     expect(MockedStyleSwitcherControl).toHaveBeenCalledWith({
       styles: mockStyles,
       activeStyleId: 'voyager',
-      onBeforeStyleChange,
-      onAfterStyleChange,
+      onBeforeStyleChange: expect.any(Function),
+      onAfterStyleChange: expect.any(Function),
       theme: 'light',
       showLabels: true,
       showImages: false,

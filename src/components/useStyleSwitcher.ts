@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { StyleSwitcherControl } from './StyleSwitcherControl';
 import type { StyleSwitcherControlOptions } from './StyleSwitcherControl';
 
@@ -10,41 +10,52 @@ export interface UseStyleSwitcherOptions extends StyleSwitcherControlOptions {
   position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 }
 
+// A key dropped from the hook's options must fall back to its default, so
+// every updatable option is sent explicitly on each update.
+const RESET_OPTIONS: Partial<StyleSwitcherControlOptions> = {
+  showLabels: undefined,
+  showImages: undefined,
+  animationDuration: undefined,
+  maxHeight: undefined,
+  theme: undefined,
+  design: undefined,
+  classNames: undefined,
+  rtl: undefined,
+};
+
 /**
- * React hook for using StyleSwitcherControl with any map instance
+ * React hook for using StyleSwitcherControl with any map instance.
+ *
+ * The map must be passed as state (not `ref.current`) so that the hook
+ * re-runs once the map exists. Option changes update the existing control, and
+ * callbacks may change identity freely. Returns the control, or null until it
+ * has been added.
  *
  * @example
  * ```tsx
- * import { useEffect, useRef } from 'react';
+ * import { useEffect, useRef, useState } from 'react';
  * import { useStyleSwitcher } from 'map-gl-style-switcher/react';
  * import maplibregl from 'maplibre-gl';
  *
  * function MyMapComponent() {
  *   const mapContainer = useRef<HTMLDivElement>(null);
- *   const map = useRef<maplibregl.Map | null>(null);
- *
- *   const styles = [
- *     { id: 'streets', name: 'Streets', styleUrl: 'mapbox://styles/mapbox/streets-v11' },
- *     { id: 'satellite', name: 'Satellite', styleUrl: 'mapbox://styles/mapbox/satellite-v9' }
- *   ];
+ *   const [map, setMap] = useState<maplibregl.Map | null>(null);
  *
  *   useEffect(() => {
  *     if (!mapContainer.current) return;
- *
- *     map.current = new maplibregl.Map({
+ *     const instance = new maplibregl.Map({
  *       container: mapContainer.current,
  *       style: styles[0].styleUrl,
- *       center: [0, 0],
- *       zoom: 2
  *     });
- *
- *     return () => map.current?.remove();
+ *     setMap(instance);
+ *     return () => instance.remove();
  *   }, []);
  *
- *   useStyleSwitcher(map.current, {
+ *   useStyleSwitcher(map, {
  *     styles,
  *     theme: 'auto',
- *     position: 'top-right'
+ *     position: 'top-right',
+ *     onAfterStyleChange: (_from, to) => map?.setStyle(to.styleUrl),
  *   });
  *
  *   return <div ref={mapContainer} style={{ width: '100%', height: '400px' }} />;
@@ -54,30 +65,50 @@ export interface UseStyleSwitcherOptions extends StyleSwitcherControlOptions {
 export function useStyleSwitcher(
   map: MapInstance | null,
   options: UseStyleSwitcherOptions
-) {
-  const controlRef = useRef<StyleSwitcherControl | null>(null);
-  const { position, ...controlOptions } = options;
+): StyleSwitcherControl | null {
+  const { position = 'top-right', ...controlOptions } = options;
+  const [control, setControl] = useState<StyleSwitcherControl | null>(null);
 
-  // JSON-serialised string is stable across renders when content is unchanged,
-  // giving the effect a reliable deep-equality check without useMemo overhead
-  // (controlOptions is a new object reference every render regardless).
+  // The control reads the latest options through this ref, so a new callback
+  // identity on each render neither recreates it nor leaves it calling a
+  // stale closure.
+  const latestOptions = useRef(controlOptions);
+  latestOptions.current = controlOptions;
+
+  // Functions serialise to nothing, so this only changes with the data options.
   const optionsKey = JSON.stringify(controlOptions);
+  const appliedKey = useRef(optionsKey);
 
   useEffect(() => {
     if (!map) return;
 
-    // Create and add the control
-    controlRef.current = new StyleSwitcherControl(controlOptions);
-    map.addControl(controlRef.current, position || 'top-right');
+    const instance = new StyleSwitcherControl({
+      ...latestOptions.current,
+      onBeforeStyleChange: (from, to) =>
+        latestOptions.current.onBeforeStyleChange?.(from, to),
+      onAfterStyleChange: (from, to) =>
+        latestOptions.current.onAfterStyleChange?.(from, to),
+    });
+    appliedKey.current = optionsKey;
+    map.addControl(instance, position);
+    setControl(instance);
 
     return () => {
-      if (controlRef.current && map) {
-        map.removeControl(controlRef.current);
-        controlRef.current = null;
-      }
+      map.removeControl(instance);
+      setControl(null);
     };
+    // Option changes are applied by the effect below, without recreating.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [map, position, optionsKey]);
+  }, [map, position]);
 
-  return controlRef.current;
+  useEffect(() => {
+    if (!control || appliedKey.current === optionsKey) return;
+    appliedKey.current = optionsKey;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { onBeforeStyleChange, onAfterStyleChange, ...data } =
+      latestOptions.current;
+    control.updateOptions({ ...RESET_OPTIONS, ...data });
+  }, [control, optionsKey]);
+
+  return control;
 }

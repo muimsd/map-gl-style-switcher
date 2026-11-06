@@ -101,11 +101,20 @@ describe('options', () => {
           showImages: false,
         })
     ).toThrow(message);
+  });
 
+  it('warns and keeps previous values when an update would hide both', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation();
     const { control, items } = setup({ showImages: false });
-    expect(() => control.updateOptions({ showLabels: false })).toThrow(message);
-    // A rejected update leaves the control as it was.
+
+    expect(() =>
+      control.updateOptions({ showLabels: false, theme: 'dark' })
+    ).not.toThrow();
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('Keeping their previous values.')
+    );
     expect(items()[0].querySelector('span')).toBeTruthy();
+    expect(items()[0].querySelector('img')).toBeNull();
   });
 
   it('uses defaults when options are explicitly undefined', () => {
@@ -308,6 +317,12 @@ describe('mouse', () => {
     expect(isOpen()).toBe(true);
   });
 
+  it('lets a press on the trigger focus it natively', () => {
+    const { trigger } = setup();
+    const event = pointer(trigger(), 'mousedown', 'mouse');
+    expect(event.defaultPrevented).toBe(false);
+  });
+
   it('does not move focus when pressing inside the control', () => {
     const { container, trigger, items, isOpen } = setup();
     trigger().focus();
@@ -351,6 +366,37 @@ describe('touch', () => {
     expect(isOpen()).toBe(true);
     pointer(document.body, 'pointerdown', 'touch');
     expect(isOpen()).toBe(false);
+  });
+});
+
+describe('shadow DOM', () => {
+  it('does not treat presses inside a shadow root as outside', () => {
+    const control = new StyleSwitcherControl({ styles });
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    const container = control.onAdd({});
+    host.attachShadow({ mode: 'open' }).appendChild(container);
+    added.push(control);
+
+    hover(container);
+    const option = container.querySelector('[role="option"]') as HTMLElement;
+    const event = new MouseEvent('pointerdown', {
+      bubbles: true,
+      composed: true,
+    });
+    option.dispatchEvent(event);
+    expect(
+      container
+        .querySelector('[role="combobox"]')
+        ?.getAttribute('aria-expanded')
+    ).toBe('true');
+
+    pointer(document.body, 'pointerdown', 'mouse');
+    expect(
+      container
+        .querySelector('[role="combobox"]')
+        ?.getAttribute('aria-expanded')
+    ).toBe('false');
   });
 });
 
@@ -508,6 +554,13 @@ describe('thumbnails', () => {
     expect(items()[0]).toBe(before);
   });
 
+  it('keeps trigger focus when the content is rebuilt', () => {
+    const { control, trigger } = setup();
+    trigger().focus();
+    control.updateOptions({ showLabels: false });
+    expect(document.activeElement).toBe(trigger());
+  });
+
   it('updates thumbnails when the content does change', () => {
     const { control, trigger } = setup();
     control.updateOptions({
@@ -601,6 +654,15 @@ describe('rendering', () => {
     expect(list().className).toBe('style-switcher-list');
   });
 
+  it('hides the list inline, so custom list classes cannot reveal it', () => {
+    const { container, list } = setup({ classNames: { list: 'my-list' } });
+    expect(list().style.display).toBe('none');
+    hover(container);
+    expect(list().style.display).toBe('');
+    unhover(container);
+    expect(list().style.display).toBe('none');
+  });
+
   it('applies the outlined design and can remove it', () => {
     const { control, container } = setup({ design: 'outlined' });
     expect(container.classList.contains('style-switcher-outlined')).toBe(true);
@@ -654,13 +716,17 @@ describe('theme', () => {
     expect(has(container, 'dark')).toBe(true);
   });
 
-  it('ignores OS changes unless in auto mode', () => {
+  it('only subscribes to OS changes while in auto mode', () => {
     const query = mockDarkMode(false);
-    const { container } = setup({ theme: 'light' });
-    const [, onChange] = query.addEventListener.mock.calls[0];
-    query.matches = true;
-    onChange();
-    expect(has(container, 'light')).toBe(true);
+    const { control } = setup({ theme: 'light' });
+    expect(window.matchMedia).not.toHaveBeenCalled();
+
+    control.updateOptions({ theme: 'auto' });
+    control.updateOptions({ maxHeight: 100 });
+    expect(query.addEventListener).toHaveBeenCalledTimes(1);
+
+    control.updateOptions({ theme: 'dark' });
+    expect(query.removeEventListener).toHaveBeenCalledTimes(1);
   });
 
   it('works where matchMedia is unavailable', () => {
@@ -697,8 +763,29 @@ describe('lifecycle', () => {
   it('removes the element and its document listener', () => {
     const remove = jest.spyOn(document, 'removeEventListener');
     const { control, container } = setup();
+    hover(container);
     control.onRemove();
     expect(container.isConnected).toBe(false);
+    expect(remove).toHaveBeenCalledWith(
+      'pointerdown',
+      expect.any(Function),
+      true
+    );
+  });
+
+  it('only listens on the document while open', () => {
+    const add = jest.spyOn(document, 'addEventListener');
+    const remove = jest.spyOn(document, 'removeEventListener');
+    const { container } = setup();
+    expect(add).not.toHaveBeenCalledWith(
+      'pointerdown',
+      expect.any(Function),
+      true
+    );
+
+    hover(container);
+    expect(add).toHaveBeenCalledWith('pointerdown', expect.any(Function), true);
+    unhover(container);
     expect(remove).toHaveBeenCalledWith(
       'pointerdown',
       expect.any(Function),

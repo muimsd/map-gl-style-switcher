@@ -88,14 +88,11 @@ export const MapGLStyleSwitcher: React.FC<MapGLStyleSwitcherProps> = ({
   onAfterStyleChangeRef.current = onAfterStyleChange;
   onStyleChangeRef.current = onStyleChange;
 
-  // Stable ref to the underlying control instance so the update effect below
-  // can imperatively call updateOptions when non-callback props change.
-  const controlRef = useRef<StyleSwitcherControl | null>(null);
-
-  // useControl's factory is only invoked once (on mount) by react-map-gl.
+  // Use the instance useControl returns: StrictMode double-invokes its factory
+  // and discards one result, so a ref set inside it can point at the wrong one.
   // Callbacks are intentionally delegated through refs so they never need to
   // cause a control recreation.
-  useControl(
+  const control = useControl(
     () => {
       const ctrl = new StyleSwitcherControl({
         styles,
@@ -115,7 +112,6 @@ export const MapGLStyleSwitcher: React.FC<MapGLStyleSwitcherProps> = ({
           onStyleChangeRef.current?.(to.styleUrl);
         },
       });
-      controlRef.current = ctrl;
       return ctrl;
     },
     { position }
@@ -125,14 +121,19 @@ export const MapGLStyleSwitcher: React.FC<MapGLStyleSwitcherProps> = ({
   // Callbacks are excluded because they are handled via refs above. The first
   // run is skipped: the factory above has just received these same values.
   const isMount = useRef(true);
+  const appliedActiveId = useRef(activeStyleId);
   useEffect(() => {
     if (isMount.current) {
       isMount.current = false;
       return;
     }
-    controlRef.current?.updateOptions({
+    // Only a changed id is sent: re-sending the old one would undo the style
+    // the user has picked since.
+    const idChanged = activeStyleId !== appliedActiveId.current;
+    appliedActiveId.current = activeStyleId;
+    control?.updateOptions({
       styles,
-      activeStyleId,
+      activeStyleId: idChanged ? activeStyleId : undefined,
       theme,
       design,
       showLabels,
@@ -153,6 +154,7 @@ export const MapGLStyleSwitcher: React.FC<MapGLStyleSwitcherProps> = ({
     maxHeight,
     rtl,
     classNames,
+    control,
   ]);
 
   return null;

@@ -224,6 +224,20 @@ describe('useStyleSwitcher', () => {
       expect(update.maxHeight).toBe(100);
     });
 
+    test('should only send activeStyleId when it changed', () => {
+      const { rerender } = render({ activeStyleId: 'voyager', theme: 'dark' });
+
+      rerender({ options: { activeStyleId: 'voyager', theme: 'light' } });
+      expect(
+        mockControlInstance.updateOptions.mock.calls[0][0].activeStyleId
+      ).toBeUndefined();
+
+      rerender({ options: { activeStyleId: 'positron', theme: 'light' } });
+      expect(
+        mockControlInstance.updateOptions.mock.calls[1][0].activeStyleId
+      ).toBe('positron');
+    });
+
     test('should not pass callbacks to updateOptions', () => {
       const { rerender } = render({ theme: 'dark' });
 

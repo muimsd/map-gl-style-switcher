@@ -22,7 +22,9 @@
   --style-switcher-scrollbar-thumb: #ccc;
 }
 
-.style-switcher-dark {
+/* :where() has zero specificity, so a plain .style-switcher override always wins
+   over the themes, whatever the stylesheet order. */
+:where(.style-switcher-dark) {
   --style-switcher-bg: #2a2a2a;
   --style-switcher-fg: #fff;
   --style-switcher-border: #444;
@@ -38,7 +40,7 @@
 
 /* Translucent backdrop keeps items legible over the map; each item is outlined
    instead of filled. */
-.style-switcher-outlined {
+:where(.style-switcher-outlined) {
   --style-switcher-bg: rgba(255, 255, 255, 0.9);
   --style-switcher-border: #ccc;
   --style-switcher-shadow: none;
@@ -52,7 +54,7 @@
   --style-switcher-scrollbar-track: transparent;
 }
 
-.style-switcher-dark.style-switcher-outlined {
+:where(.style-switcher-dark.style-switcher-outlined) {
   --style-switcher-bg: rgba(42, 42, 42, 0.9);
   --style-switcher-border: #555;
   --style-switcher-item-border: #555;
@@ -91,10 +93,6 @@
   scrollbar-width: thin;
   scrollbar-color: var(--style-switcher-scrollbar-thumb)
     var(--style-switcher-scrollbar-track);
-}
-
-.style-switcher-list[hidden] {
-  display: none;
 }
 
 @keyframes style-switcher-fade-in {
@@ -145,8 +143,9 @@
   outline: none;
 }
 
+/* [role='option'] keeps the highlight visible with a custom classNames.item. */
 .style-switcher-item:focus-visible,
-.style-switcher-item.active {
+[role='option'].active {
   outline: 2px solid var(--style-switcher-focus);
   outline-offset: -2px;
 }

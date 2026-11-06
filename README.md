@@ -238,7 +238,7 @@ interface StyleSwitcherClassNames {
 ### Option details
 
 - **`activeStyleId`**: Controls both the initially selected style and what is shown in the collapsed state. When using `MapGLStyleSwitcher`, updating this prop reactively switches the highlighted style.
-- **`showLabels`** & **`showImages`**: At least one must be `true` (throws otherwise).
+- **`showLabels`** & **`showImages`**: At least one must be `true`. The constructor throws otherwise; `updateOptions` warns and keeps their previous values.
 - **`theme`**:
   - `'light'`: Light colour scheme (default)
   - `'dark'`: Dark colour scheme
@@ -288,6 +288,7 @@ const control = new StyleSwitcherControl({
     list: 'my-style-list',
     item: 'my-style-item',
     itemSelected: 'my-style-item-selected',
+    itemActive: 'my-style-item-active',
     itemHideLabel: 'my-style-item-hide-label',
     dark: 'my-style-dark',
     light: 'my-style-light',

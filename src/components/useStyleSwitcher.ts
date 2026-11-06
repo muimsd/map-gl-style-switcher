@@ -78,6 +78,7 @@ export function useStyleSwitcher(
   // Functions serialise to nothing, so this only changes with the data options.
   const optionsKey = JSON.stringify(controlOptions);
   const appliedKey = useRef(optionsKey);
+  const appliedActiveId = useRef(controlOptions.activeStyleId);
 
   useEffect(() => {
     if (!map) return;
@@ -90,6 +91,7 @@ export function useStyleSwitcher(
         latestOptions.current.onAfterStyleChange?.(from, to),
     });
     appliedKey.current = optionsKey;
+    appliedActiveId.current = latestOptions.current.activeStyleId;
     map.addControl(instance, position);
     setControl(instance);
 
@@ -105,9 +107,17 @@ export function useStyleSwitcher(
     if (!control || appliedKey.current === optionsKey) return;
     appliedKey.current = optionsKey;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { onBeforeStyleChange, onAfterStyleChange, ...data } =
+    const { onBeforeStyleChange, onAfterStyleChange, activeStyleId, ...data } =
       latestOptions.current;
-    control.updateOptions({ ...RESET_OPTIONS, ...data });
+    // Only a changed id is sent: re-sending the old one would undo the style
+    // the user has picked since.
+    const idChanged = activeStyleId !== appliedActiveId.current;
+    appliedActiveId.current = activeStyleId;
+    control.updateOptions({
+      ...RESET_OPTIONS,
+      ...data,
+      activeStyleId: idChanged ? activeStyleId : undefined,
+    });
   }, [control, optionsKey]);
 
   return control;

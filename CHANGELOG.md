@@ -19,7 +19,7 @@ The control was rewritten. Exports, option names and default class names are unc
 - **DOM and ARIA:** now a WAI-ARIA select-only combobox. `role="combobox"`, `tabindex` and `aria-expanded` moved from the container to a trigger element, and `role="listbox"` moved to the list. The list stays in the DOM (`hidden`) while collapsed, and the collapsed item is no longer `role="option"`. Code that queries these attributes needs updating.
 - Focusing the control with the keyboard no longer opens it; press `Enter`, `Space` or an arrow key. Selecting with the keyboard now closes the list.
 - `updateOptions({ classNames })` replaces the previous custom class names instead of merging with them.
-- `updateOptions` now throws if both `showLabels` and `showImages` end up `false`, matching the constructor.
+- `updateOptions` now warns and keeps the previous values if both `showLabels` and `showImages` would end up `false`.
 - `useStyleSwitcher` updates the existing control when options change instead of recreating it, and returns the control once it has been added.
 - CSS: colours are now `--style-switcher-*` custom properties, the keyframes are renamed to `style-switcher-fade-in`, and hovering no longer shifts items by 1px.
 
@@ -34,6 +34,8 @@ The control was rewritten. Exports, option names and default class names are unc
 - Keyboard navigation in real browsers: moving to an option blurred the container, which collapsed and destroyed the list.
 - Options set to `undefined` overwrote defaults. This affected every `MapGLStyleSwitcher` that did not set `maxHeight` or `animationDuration`, which lost both (`"undefinedpx"`).
 - `useStyleSwitcher` called stale callbacks, because callbacks were left out of its change detection.
+- `MapGLStyleSwitcher` and `useStyleSwitcher` re-sent an unchanged `activeStyleId` on every other prop change, undoing the style the user had picked.
+- `MapGLStyleSwitcher` updated an orphan control under React 19 StrictMode, so prop changes never reached the map.
 - `updateOptions({ theme: 'auto' })` after mount did not follow OS theme changes.
 - `updateOptions({ classNames: { container } })` was ignored, and class names containing spaces threw.
 - Items shifted by 1px when selected, because of mismatched border widths.

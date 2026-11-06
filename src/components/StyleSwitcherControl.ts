@@ -117,7 +117,7 @@ export class StyleSwitcherControl implements IControl {
 
     const list = document.createElement('div');
     list.id = `${this._idPrefix}-list`;
-    list.hidden = true;
+    this._setListVisible(list, false);
     list.setAttribute('role', 'listbox');
     list.setAttribute('aria-label', ARIA_LABEL);
 
@@ -132,18 +132,10 @@ export class StyleSwitcherControl implements IControl {
     container.addEventListener('pointerenter', this._onPointerHover);
     container.addEventListener('pointerleave', this._onPointerHover);
     container.addEventListener('pointerdown', this._onPointerDown);
-    // Keep focus where it is when pressing inside the control: a press on an
-    // option must not blur the trigger, or the list would close before `click`.
-    container.addEventListener('mousedown', e => e.preventDefault());
+    container.addEventListener('mousedown', this._onMouseDown);
     container.addEventListener('click', this._onClick);
     trigger.addEventListener('keydown', this._onKeyDown);
     trigger.addEventListener('blur', () => this._setExpanded(false));
-    // Capture phase: the map may stop propagation of events on its canvas.
-    document.addEventListener('pointerdown', this._onDocumentPointerDown, true);
-
-    this._darkModeQuery =
-      window.matchMedia?.('(prefers-color-scheme: dark)') ?? null;
-    this._darkModeQuery?.addEventListener('change', this._syncContainer);
 
     this._container = container;
     this._list = list;
@@ -158,8 +150,7 @@ export class StyleSwitcherControl implements IControl {
       this._onDocumentPointerDown,
       true
     );
-    this._darkModeQuery?.removeEventListener('change', this._syncContainer);
-    this._darkModeQuery = null;
+    this._subscribeToDarkMode(false);
     this._container?.remove();
     this._container = this._list = this._trigger = null;
     this._items = [];
@@ -176,7 +167,17 @@ export class StyleSwitcherControl implements IControl {
   updateOptions(updates: Partial<StyleSwitcherControlOptions>): void {
     const styles = updates.styles ?? this._options.styles;
     const stylesChanged = styles !== this._options.styles;
-    this._options = resolveOptions({ ...this._options, ...updates, styles });
+    const next = { ...this._options, ...updates, styles };
+    if (next.showLabels === false && next.showImages === false) {
+      // Unlike the constructor this does not throw: it may run inside a React
+      // effect, and two separate updates can pass through this state.
+      console.warn(
+        'StyleSwitcherControl: at least one of showLabels or showImages must be true. Keeping their previous values.'
+      );
+      next.showLabels = this._options.showLabels;
+      next.showImages = this._options.showImages;
+    }
+    this._options = resolveOptions(next);
     this._reconcileActiveStyleId(updates.activeStyleId, stylesChanged);
     this._sync();
   }
@@ -210,6 +211,7 @@ export class StyleSwitcherControl implements IControl {
 
   private _sync(): void {
     if (!this._container || !this._list) return;
+    this._subscribeToDarkMode(this._options.theme === 'auto');
     this._syncContainer();
 
     const { styles, showLabels, showImages, classNames } = this._options;
@@ -227,6 +229,17 @@ export class StyleSwitcherControl implements IControl {
     this._list.style.maxHeight = `${this._options.maxHeight}px`;
     this._list.style.animationDuration = `${this._options.animationDuration}ms`;
     this._syncSelection();
+  }
+
+  private _subscribeToDarkMode(subscribe: boolean): void {
+    if (subscribe && !this._darkModeQuery) {
+      this._darkModeQuery =
+        window.matchMedia?.('(prefers-color-scheme: dark)') ?? null;
+      this._darkModeQuery?.addEventListener('change', this._syncContainer);
+    } else if (!subscribe && this._darkModeQuery) {
+      this._darkModeQuery.removeEventListener('change', this._syncContainer);
+      this._darkModeQuery = null;
+    }
   }
 
   private _syncContainer = (): void => {
@@ -268,7 +281,10 @@ export class StyleSwitcherControl implements IControl {
     delete this._trigger.dataset.styleId;
 
     if (styles.length) {
-      this._container.replaceChildren(this._list, this._trigger);
+      // Re-parenting a connected trigger would drop its keyboard focus.
+      if (this._trigger.parentNode !== this._container) {
+        this._container.replaceChildren(this._list, this._trigger);
+      }
     } else {
       this._setExpanded(false);
       this._container.replaceChildren();
@@ -351,9 +367,30 @@ export class StyleSwitcherControl implements IControl {
     this._expanded = expanded;
     this._highlightedIndex = -1;
     if (!this._list || !this._trigger) return;
-    this._list.hidden = !expanded;
+    this._setListVisible(this._list, expanded);
     this._trigger.setAttribute('aria-expanded', String(expanded));
+    if (expanded) {
+      // Capture phase: the map may stop propagation of events on its canvas.
+      document.addEventListener(
+        'pointerdown',
+        this._onDocumentPointerDown,
+        true
+      );
+    } else {
+      document.removeEventListener(
+        'pointerdown',
+        this._onDocumentPointerDown,
+        true
+      );
+    }
     this._syncSelection();
+  }
+
+  // The inline style also covers custom list classes that set `display`, which
+  // would otherwise override the `hidden` attribute.
+  private _setListVisible(list: HTMLElement, visible: boolean): void {
+    list.hidden = !visible;
+    list.style.display = visible ? '' : 'none';
   }
 
   private _highlight(index: number): void {
@@ -398,8 +435,16 @@ export class StyleSwitcherControl implements IControl {
     this._pressPointerType = e.pointerType;
   };
 
+  // A press on the trigger focuses it natively, so keys work after a click
+  // without showing the focus ring that a scripted focus() would. A press
+  // anywhere else must not blur it, or the list would close before `click`.
+  private _onMouseDown = (e: MouseEvent): void => {
+    if (!this._trigger?.contains(e.target as Node)) e.preventDefault();
+  };
+
+  // composedPath, because e.target is retargeted at a shadow root boundary.
   private _onDocumentPointerDown = (e: Event): void => {
-    if (!this._container?.contains(e.target as Node)) {
+    if (!this._container || !e.composedPath().includes(this._container)) {
       this._setExpanded(false);
     }
   };
